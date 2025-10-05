@@ -245,7 +245,7 @@ const useCanvas = (store) => {
         fontSize: 16,
         lineHeight: 1.4,
         align: 'left',
-        fill: '#ffffff'
+        fill: '#000000'
       });
       
       // Selectează elementul nou creat
@@ -318,7 +318,7 @@ const useCanvas = (store) => {
             fontSize: 16,
             lineHeight: 1.4,
             align: 'left',
-            fill: '#ffffff'
+            fill: '#000000'
           });
           replacedCount++;
           console.log(`✓ Page ${pageIndex + 1}: Created new text with slide ${slide.slideNumber}`);

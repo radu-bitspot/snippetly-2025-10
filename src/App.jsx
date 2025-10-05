@@ -5,7 +5,7 @@ import { Spinner } from '@blueprintjs/core';
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS, INTERNAL_SECTIONS, VideosSection} from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PagesTimeline } from 'polotno/pages-timeline';
 import { setTranslations } from 'polotno/config';
@@ -41,6 +41,7 @@ import LoadingScreen from './components/LoadingScreen';
 setTranslations(en);
 
 // Creez un array complet nou pentru secțiuni pentru a evita conflictele
+console.log('🔧 Creez secțiuni noi...');
 
 // Găsesc secțiunile de bază (text, background, etc.) fără upload și my-designs
 const originalSections = DEFAULT_SECTIONS.filter(section => {
@@ -52,18 +53,26 @@ const originalSections = DEFAULT_SECTIONS.filter(section => {
 });
 
 // Înlocuiesc elements cu shapes în copie
-const toBeRemovedSections = ['templates', 'photos', 'background', 'elements'];
-const cleanedSections = originalSections
-  .filter(section => !toBeRemovedSections.includes(section.name));
+const cleanedSections = originalSections.map(section => {
+  if (section.name === 'elements') {
+    return ShapesSection;
+  }
+  return section;
+});
 
+// Creez array-ul final fără să modific DEFAULT_SECTIONS direct
 const FINAL_SECTIONS = [
-  SummarizeSection,       // Summarize
   MyDesignsSection,      // Prima secțiune
-  UploadSection,         // Upload personalizat
-  ShapesSection,  
-  StableDiffusionSection, // AI art
+  UploadSection,         // Upload personalizat  
   ...cleanedSections,    // Secțiunile de bază
+  IconsSection,          // Icoane
+  QuotesSection,         // Citate
+  QrSection,             // QR codes
+  StableDiffusionSection, // AI art
+  SummarizeSection       // Summarize
 ];
+
+console.log('✅ Secțiuni finale:', FINAL_SECTIONS.map(s => s.name || 'unnamed'));
 
 const isStandalone = () => {
   return (
@@ -76,7 +85,6 @@ const getOffsetHeight = () => {
   let safeAreaInsetBottom = 0;
 
   if (isStandalone()) {
-    // Try to get the safe area inset using env() variables
     const safeAreaInsetBottomString = getComputedStyle(
       document.documentElement
     ).getPropertyValue('env(safe-area-inset-bottom)');
@@ -84,13 +92,11 @@ const getOffsetHeight = () => {
       safeAreaInsetBottom = parseFloat(safeAreaInsetBottomString);
     }
 
-    // Fallback values for specific devices if env() is not supported
     if (!safeAreaInsetBottom) {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
       if (/iPhone|iPad|iPod/i.test(userAgent) && !window.MSStream) {
-        // This is an approximation; you might need to adjust this value based on testing
-        safeAreaInsetBottom = 20; // Example fallback value for iPhone
+        safeAreaInsetBottom = 20;
       }
     }
   }
@@ -133,16 +139,64 @@ const PolotnoStudio = observer(({ store }) => {
     project.firstLoad();
   }, []);
 
+  // Handle paste from external sources (Ctrl+V with text from clipboard)
+  React.useEffect(() => {
+    const handlePaste = (e) => {
+      const activeElement = document.activeElement;
+      const isEditingText = activeElement.tagName === 'TEXTAREA' || 
+                           activeElement.tagName === 'INPUT' ||
+                           activeElement.isContentEditable ||
+                           activeElement.getAttribute('contenteditable') === 'true';
+      
+      if (isEditingText) {
+        return;
+      }
+
+      let text = null;
+      
+      if (e.clipboardData) {
+        text = e.clipboardData.getData('text/plain');
+      }
+      
+      if (text && text.trim() && !text.startsWith('{') && !text.includes('"type"')) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('📋 External text detected:', text.substring(0, 50));
+        
+        const width = Math.min(400, store.width - 40);
+        const newElement = store.activePage.addElement({
+          type: 'text',
+          text: text.trim(),
+          width,
+          x: store.width / 2 - width / 2,
+          y: store.height / 2 - 50,
+          fontFamily: 'Inter',
+          fontSize: 16,
+          lineHeight: 1.4,
+          align: 'left',
+          fill: '#000000'
+        });
+        
+        if (newElement) {
+          store.selectElements([newElement.id]);
+        }
+        
+        console.log('✅ Text pasted from external clipboard');
+        return false;
+      }
+    };
+
+    document.addEventListener('paste', handlePaste, true);
+    return () => document.removeEventListener('paste', handlePaste, true);
+  }, [store]);
+
   const handleDrop = (ev) => {
-    // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
 
-    // skip the case if we dropped DOM element from side panel
-    // in that case Safari will have more data in "items"
     if (ev.dataTransfer.files.length !== ev.dataTransfer.items.length) {
       return;
     }
-    // Use DataTransfer interface to access the file(s)
     for (let i = 0; i < ev.dataTransfer.files.length; i++) {
       loadFile(ev.dataTransfer.files[i], store);
     }
@@ -205,17 +259,14 @@ const PolotnoStudio = observer(({ store }) => {
 const AppContent = ({ store }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Show login page if not authenticated
   if (!isAuthenticated) {
     return <LoginPage />;
   }
 
-  // Show main app if authenticated
   return <PolotnoStudio store={store} />;
 };
 
