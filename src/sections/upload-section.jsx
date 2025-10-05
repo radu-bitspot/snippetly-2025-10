@@ -7,7 +7,6 @@ import {
   UploadSection as DefaultUploadSection,
 } from 'polotno/side-panel';
 import { getImageSize, getCrop } from 'polotno/utils/image';
-import { getVideoSize, getVideoPreview } from 'polotno/utils/video';
 import { dataURLtoBlob } from '../blob';
 import { CloudWarning } from '../cloud-warning';
 import { useProject } from '../project';
@@ -187,7 +186,7 @@ const ImageSelector = ({ images, onDelete, onSelect, store, title, isLoading }) 
   const handleImageSelect = async (item, pos, element) => {
     const { src, type } = item;
     // Alege funcția de măsurare în funcție de tip
-    const getSizeFunc = type === 'video' ? getVideoSize : getImageSize;
+    const getSizeFunc = getImageSize;
     let { width, height } = await getSizeFunc(src);
 
     // Dacă există un element SVG selectat, setează ca mască
@@ -323,9 +322,7 @@ export const UploadPanel = observer(({ store }) => {
     for (const file of files) {
       const type = getType(file);
       // Generează preview în funcție de tip
-      const previewDataURL = type === 'video' 
-        ? await getVideoPreview(URL.createObjectURL(file))  // Preview video
-        : await getImageFilePreview(file);                  // Thumbnail imagine
+      const previewDataURL = await getImageFilePreview(file);
       
       const preview = dataURLtoBlob(previewDataURL);
       // Upload în cloud storage (Puter)
@@ -429,7 +426,7 @@ export const UploadPanel = observer(({ store }) => {
             style={{ display: 'none' }}
             onChange={handleFileInput}
             multiple                    // Permite selecția multiplă
-            accept="image/*,video/*"    // Acceptă doar imagini și video-uri
+            accept="image/*"    // Acceptă doar imagini
           />
         </label>
       </div>

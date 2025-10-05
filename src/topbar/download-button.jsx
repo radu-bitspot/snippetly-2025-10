@@ -187,7 +187,6 @@ export const DownloadButton = observer(({ store }) => {
             <option value="svg">SVG</option>
             <option value="json">JSON</option>
             <option value="gif">GIF</option>
-            <option value="mp4">MP4 Video (Beta)</option>
           </HTMLSelect>
 
           {type !== 'json' && type !== 'html' && type !== 'svg' && (

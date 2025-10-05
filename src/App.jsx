@@ -5,7 +5,7 @@ import { Spinner } from '@blueprintjs/core';
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS, INTERNAL_SECTIONS, VideosSection} from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PagesTimeline } from 'polotno/pages-timeline';
 import { setTranslations } from 'polotno/config';
@@ -41,7 +41,6 @@ import LoadingScreen from './components/LoadingScreen';
 setTranslations(en);
 
 // Creez un array complet nou pentru secțiuni pentru a evita conflictele
-console.log('🔧 Creez secțiuni noi...');
 
 // Găsesc secțiunile de bază (text, background, etc.) fără upload și my-designs
 const originalSections = DEFAULT_SECTIONS.filter(section => {
@@ -53,27 +52,18 @@ const originalSections = DEFAULT_SECTIONS.filter(section => {
 });
 
 // Înlocuiesc elements cu shapes în copie
-const cleanedSections = originalSections.map(section => {
-  if (section.name === 'elements') {
-    return ShapesSection;
-  }
-  return section;
-});
+const toBeRemovedSections = ['templates', 'photos', 'background', 'elements'];
+const cleanedSections = originalSections
+  .filter(section => !toBeRemovedSections.includes(section.name));
 
-// Creez array-ul final fără să modific DEFAULT_SECTIONS direct
 const FINAL_SECTIONS = [
+  SummarizeSection,       // Summarize
   MyDesignsSection,      // Prima secțiune
-  UploadSection,         // Upload personalizat  
-  ...cleanedSections,    // Secțiunile de bază
-  IconsSection,          // Icoane
-  QuotesSection,         // Citate
-  QrSection,             // QR codes
+  UploadSection,         // Upload personalizat
+  ShapesSection,  
   StableDiffusionSection, // AI art
-  SummarizeSection       // Summarize
+  ...cleanedSections,    // Secțiunile de bază
 ];
-
-console.log('✅ Secțiuni finale:', FINAL_SECTIONS.map(s => s.name || 'unnamed'));
-// DEFAULT_SECTIONS.push(VideosSection);
 
 const isStandalone = () => {
   return (
@@ -172,7 +162,7 @@ const PolotnoStudio = observer(({ store }) => {
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={FINAL_SECTIONS} />
+            <SidePanel store={store} sections={FINAL_SECTIONS} defaultSection={"my-designs"} />
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar store={store} />
