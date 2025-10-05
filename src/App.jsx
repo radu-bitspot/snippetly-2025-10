@@ -73,7 +73,6 @@ const FINAL_SECTIONS = [
 ];
 
 console.log('✅ Secțiuni finale:', FINAL_SECTIONS.map(s => s.name || 'unnamed'));
-// DEFAULT_SECTIONS.push(VideosSection);
 
 const isStandalone = () => {
   return (
@@ -86,7 +85,6 @@ const getOffsetHeight = () => {
   let safeAreaInsetBottom = 0;
 
   if (isStandalone()) {
-    // Try to get the safe area inset using env() variables
     const safeAreaInsetBottomString = getComputedStyle(
       document.documentElement
     ).getPropertyValue('env(safe-area-inset-bottom)');
@@ -94,13 +92,11 @@ const getOffsetHeight = () => {
       safeAreaInsetBottom = parseFloat(safeAreaInsetBottomString);
     }
 
-    // Fallback values for specific devices if env() is not supported
     if (!safeAreaInsetBottom) {
       const userAgent = navigator.userAgent || navigator.vendor || window.opera;
 
       if (/iPhone|iPad|iPod/i.test(userAgent) && !window.MSStream) {
-        // This is an approximation; you might need to adjust this value based on testing
-        safeAreaInsetBottom = 20; // Example fallback value for iPhone
+        safeAreaInsetBottom = 20;
       }
     }
   }
@@ -146,7 +142,6 @@ const PolotnoStudio = observer(({ store }) => {
   // Handle paste from external sources (Ctrl+V with text from clipboard)
   React.useEffect(() => {
     const handlePaste = (e) => {
-      // Check if we're editing text inside an input/textarea
       const activeElement = document.activeElement;
       const isEditingText = activeElement.tagName === 'TEXTAREA' || 
                            activeElement.tagName === 'INPUT' ||
@@ -154,24 +149,21 @@ const PolotnoStudio = observer(({ store }) => {
                            activeElement.getAttribute('contenteditable') === 'true';
       
       if (isEditingText) {
-        return; // Let default paste behavior work
+        return;
       }
 
-      // Get text from clipboard using clipboardData
       let text = null;
       
       if (e.clipboardData) {
         text = e.clipboardData.getData('text/plain');
       }
       
-      // Check if we have text and it's not internal Polotno data
       if (text && text.trim() && !text.startsWith('{') && !text.includes('"type"')) {
         e.preventDefault();
         e.stopPropagation();
         
         console.log('📋 External text detected:', text.substring(0, 50));
         
-        // Create a new text element with the pasted text
         const width = Math.min(400, store.width - 40);
         const newElement = store.activePage.addElement({
           type: 'text',
@@ -186,7 +178,6 @@ const PolotnoStudio = observer(({ store }) => {
           fill: '#000000'
         });
         
-        // Select the new element
         if (newElement) {
           store.selectElements([newElement.id]);
         }
@@ -196,21 +187,16 @@ const PolotnoStudio = observer(({ store }) => {
       }
     };
 
-    // Add event listener with capture phase to catch before Polotno
     document.addEventListener('paste', handlePaste, true);
     return () => document.removeEventListener('paste', handlePaste, true);
   }, [store]);
 
   const handleDrop = (ev) => {
-    // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
 
-    // skip the case if we dropped DOM element from side panel
-    // in that case Safari will have more data in "items"
     if (ev.dataTransfer.files.length !== ev.dataTransfer.items.length) {
       return;
     }
-    // Use DataTransfer interface to access the file(s)
     for (let i = 0; i < ev.dataTransfer.files.length; i++) {
       loadFile(ev.dataTransfer.files[i], store);
     }
@@ -230,7 +216,7 @@ const PolotnoStudio = observer(({ store }) => {
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={FINAL_SECTIONS} />
+            <SidePanel store={store} sections={FINAL_SECTIONS} defaultSection={"my-designs"} />
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar store={store} />
@@ -273,17 +259,14 @@ const PolotnoStudio = observer(({ store }) => {
 const AppContent = ({ store }) => {
   const { isAuthenticated, isLoading } = useAuth();
 
-  // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Show login page if not authenticated
   if (!isAuthenticated) {
     return <LoginPage />;
   }
 
-  // Show main app if authenticated
   return <PolotnoStudio store={store} />;
 };
 
