@@ -1,3 +1,20 @@
+/* Hide the play button from Pages Timeline */
+.polotno-pages-timeline button.bp5-button:has(.bp5-icon-play),
+button.bp5-button[style*="border-radius: 50px"]:has(.bp5-icon-play) {
+  display: none !important;
+}
+
+/* Alternative selector in case the above doesn't work */
+.polotno-pages-timeline button[style*="width: 60px"][style*="height: 60px"] {
+  display: none !important;
+}
+
+/* Hide the timeline duration display (00:00 / 00:20) */
+.polotno-pages-timeline div[style*="padding-top: 5px"] {
+  display: none !important;
+}
+
+/* Hide Videos tab from side panel */
 .polotno-side-panel-tab:has(.bp5-icon-video) {
   display: none !important;
 }
@@ -27,5 +44,4 @@
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
-
-
+}
