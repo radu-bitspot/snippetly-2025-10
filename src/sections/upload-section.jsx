@@ -265,7 +265,7 @@ const ImageSelector = ({ images, onDelete, onSelect, store, title, isLoading }) 
 
 export const UploadPanel = observer(({ store }) => {
   // Starea locală a componentei
-  const [activeTab, setActiveTab] = React.useState('upload');  // Tab-ul activ (upload/database)
+  const [activeTab] = React.useState('database');  // Întotdeauna pe database (tab-urile sunt eliminate)
   const [isUploading, setUploading] = React.useState(false);   // Dacă se încarcă fișiere
   const [message, setMessage] = React.useState('');            // Mesajul de status
   const project = useProject();                                // Hook pentru gestionarea proiectului
@@ -400,16 +400,6 @@ export const UploadPanel = observer(({ store }) => {
   return (
     <div style={{ height: '100%', display: 'flex', flexDirection: 'column' }}>
       
-      {/* Tab-urile de navigare */}
-      <div style={{ display: 'flex', marginBottom: '15px', border: '1px solid #394b59', borderRadius: '4px', overflow: 'hidden' }}>
-        <button style={styles.tab(activeTab === 'upload')} onClick={() => setActiveTab('upload')}>
-          📤 Upload New
-        </button>
-        <button style={styles.tab(activeTab === 'database')} onClick={() => setActiveTab('database')}>
-          🗃️ From Database
-        </button>
-      </div>
-
       {/* Butonul principal de upload */}
       <div style={{ marginBottom: '20px' }}>
         <label htmlFor="input-file">
@@ -437,34 +427,13 @@ export const UploadPanel = observer(({ store }) => {
       {/* Mesajele de status */}
       {message && <div style={styles.message(message.includes('✅'))}>{message}</div>}
 
-      {/* Secțiunea de refresh pentru database */}
-      {activeTab === 'database' && (
-        <div style={styles.section}>
-          <div style={styles.header}>
-            <span>🗃️ My Images ({databaseImages.length}):</span>
-            <Button
-              small
-              minimal
-              onClick={loadDatabaseImages}  // Reîncarcă imaginile din DB
-              loading={isLoading}
-              title="Refresh"
-            >
-              🔄
-            </Button>
-          </div>
-        </div>
-      )}
-
-      {/* Avertismentul pentru cloud storage */}
-      <CloudWarning />
-
-      {/* Grid-ul cu imaginile */}
+      {/* Grid-ul cu imaginile - fără header */}
       <ImageSelector
         images={allImages}
         onDelete={handleDelete}                                                          // Callback pentru ștergere
         onSelect={() => {}}                                                             // Placeholder pentru select
         store={store}                                                                   // Store-ul Polotno
-        title={activeTab === 'database' ? `📀 All Images (${allImages.length}):` : null} // Titlul condițional
+        title={null}                                                                    // Fără titlu
         isLoading={isLoading}
       />
     </div>

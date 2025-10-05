@@ -143,6 +143,64 @@ const PolotnoStudio = observer(({ store }) => {
     project.firstLoad();
   }, []);
 
+  // Handle paste from external sources (Ctrl+V with text from clipboard)
+  React.useEffect(() => {
+    const handlePaste = (e) => {
+      // Check if we're editing text inside an input/textarea
+      const activeElement = document.activeElement;
+      const isEditingText = activeElement.tagName === 'TEXTAREA' || 
+                           activeElement.tagName === 'INPUT' ||
+                           activeElement.isContentEditable ||
+                           activeElement.getAttribute('contenteditable') === 'true';
+      
+      if (isEditingText) {
+        return; // Let default paste behavior work
+      }
+
+      // Get text from clipboard using clipboardData
+      let text = null;
+      
+      if (e.clipboardData) {
+        text = e.clipboardData.getData('text/plain');
+      }
+      
+      // Check if we have text and it's not internal Polotno data
+      if (text && text.trim() && !text.startsWith('{') && !text.includes('"type"')) {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        console.log('📋 External text detected:', text.substring(0, 50));
+        
+        // Create a new text element with the pasted text
+        const width = Math.min(400, store.width - 40);
+        const newElement = store.activePage.addElement({
+          type: 'text',
+          text: text.trim(),
+          width,
+          x: store.width / 2 - width / 2,
+          y: store.height / 2 - 50,
+          fontFamily: 'Inter',
+          fontSize: 16,
+          lineHeight: 1.4,
+          align: 'left',
+          fill: '#000000'
+        });
+        
+        // Select the new element
+        if (newElement) {
+          store.selectElements([newElement.id]);
+        }
+        
+        console.log('✅ Text pasted from external clipboard');
+        return false;
+      }
+    };
+
+    // Add event listener with capture phase to catch before Polotno
+    document.addEventListener('paste', handlePaste, true);
+    return () => document.removeEventListener('paste', handlePaste, true);
+  }, [store]);
+
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
