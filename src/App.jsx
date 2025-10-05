@@ -5,7 +5,7 @@ import { Spinner } from '@blueprintjs/core';
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS } from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS, INTERNAL_SECTIONS, VideosSection} from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PagesTimeline } from 'polotno/pages-timeline';
 import { setTranslations } from 'polotno/config';
@@ -41,7 +41,6 @@ import LoadingScreen from './components/LoadingScreen';
 setTranslations(en);
 
 // Creez un array complet nou pentru secțiuni pentru a evita conflictele
-console.log('🔧 Creez secțiuni noi...');
 
 // Găsesc secțiunile de bază (text, background, etc.) fără upload și my-designs
 const originalSections = DEFAULT_SECTIONS.filter(section => {
@@ -53,27 +52,18 @@ const originalSections = DEFAULT_SECTIONS.filter(section => {
 });
 
 // Înlocuiesc elements cu shapes în copie
-const cleanedSections = originalSections.map(section => {
-  if (section.name === 'elements') {
-    return ShapesSection;
-  }
-  return section;
-});
+const toBeRemovedSections = ['templates', 'photos', 'background', 'elements'];
+const cleanedSections = originalSections
+  .filter(section => !toBeRemovedSections.includes(section.name));
 
-// Creez array-ul final fără să modific DEFAULT_SECTIONS direct
 const FINAL_SECTIONS = [
+  SummarizeSection,       // Summarize
   MyDesignsSection,      // Prima secțiune
-  UploadSection,         // Upload personalizat  
-  ...cleanedSections,    // Secțiunile de bază
-  IconsSection,          // Icoane
-  QuotesSection,         // Citate
-  QrSection,             // QR codes
+  UploadSection,         // Upload personalizat
+  ShapesSection,  
   StableDiffusionSection, // AI art
-  SummarizeSection       // Summarize
+  ...cleanedSections,    // Secțiunile de bază
 ];
-
-console.log('✅ Secțiuni finale:', FINAL_SECTIONS.map(s => s.name || 'unnamed'));
-// DEFAULT_SECTIONS.push(VideosSection);
 
 const isStandalone = () => {
   return (
@@ -143,64 +133,6 @@ const PolotnoStudio = observer(({ store }) => {
     project.firstLoad();
   }, []);
 
-  // Handle paste from external sources (Ctrl+V with text from clipboard)
-  React.useEffect(() => {
-    const handlePaste = (e) => {
-      // Check if we're editing text inside an input/textarea
-      const activeElement = document.activeElement;
-      const isEditingText = activeElement.tagName === 'TEXTAREA' || 
-                           activeElement.tagName === 'INPUT' ||
-                           activeElement.isContentEditable ||
-                           activeElement.getAttribute('contenteditable') === 'true';
-      
-      if (isEditingText) {
-        return; // Let default paste behavior work
-      }
-
-      // Get text from clipboard using clipboardData
-      let text = null;
-      
-      if (e.clipboardData) {
-        text = e.clipboardData.getData('text/plain');
-      }
-      
-      // Check if we have text and it's not internal Polotno data
-      if (text && text.trim() && !text.startsWith('{') && !text.includes('"type"')) {
-        e.preventDefault();
-        e.stopPropagation();
-        
-        console.log('📋 External text detected:', text.substring(0, 50));
-        
-        // Create a new text element with the pasted text
-        const width = Math.min(400, store.width - 40);
-        const newElement = store.activePage.addElement({
-          type: 'text',
-          text: text.trim(),
-          width,
-          x: store.width / 2 - width / 2,
-          y: store.height / 2 - 50,
-          fontFamily: 'Inter',
-          fontSize: 16,
-          lineHeight: 1.4,
-          align: 'left',
-          fill: '#000000'
-        });
-        
-        // Select the new element
-        if (newElement) {
-          store.selectElements([newElement.id]);
-        }
-        
-        console.log('✅ Text pasted from external clipboard');
-        return false;
-      }
-    };
-
-    // Add event listener with capture phase to catch before Polotno
-    document.addEventListener('paste', handlePaste, true);
-    return () => document.removeEventListener('paste', handlePaste, true);
-  }, [store]);
-
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
     ev.preventDefault();
@@ -230,7 +162,7 @@ const PolotnoStudio = observer(({ store }) => {
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={FINAL_SECTIONS} />
+            <SidePanel store={store} sections={FINAL_SECTIONS} defaultSection={"my-designs"} />
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar store={store} />
