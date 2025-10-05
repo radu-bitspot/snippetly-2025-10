@@ -212,7 +212,7 @@ const AnalyticsDashboard = () => {
 
 ### Console Inspection
 ```javascript
-// In browser console:
+// In browser console: use these to debug
 console.log('Original store:', window.originalStore);
 console.log('Enhanced store:', window.store);
 console.log('AI History:', window.store.aiHistory);
