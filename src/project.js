@@ -33,13 +33,10 @@ class Project {
   designsLength = 0;
 
   constructor({ store }) {
-    console.log('🏗️ Creating Project with store:', store);
     mobx.makeAutoObservable(this);
     this.store = store;
 
-    console.log('🏗️ Setting up change listener...');
     store.on('change', () => {
-      console.log('🏗️ Store change event fired! Current elements:', this.store.activePage?.children?.length || 0);
       this.requestSave();
     });
 
@@ -58,16 +55,12 @@ class Project {
   }
 
   requestSave() {
-    console.log('🔄 Changes detected, requesting save...');
     this.status = 'has-changes';
     if (this.saveTimeout) {
-      console.log('🔄 Save already pending, skipping...');
       return;
     }
-    console.log('🔄 Setting up save timeout (5 seconds)...');
     this.saveTimeout = setTimeout(() => {
       this.saveTimeout = null;
-      console.log('🔄 Save timeout triggered, calling save()...');
       this.save();
     }, 5000);
   }

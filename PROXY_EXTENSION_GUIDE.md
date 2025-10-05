@@ -213,11 +213,6 @@ const AnalyticsDashboard = () => {
 ### Console Inspection
 ```javascript
 // In browser console:
-console.log('Original store:', window.originalStore);
-console.log('Enhanced store:', window.store);
-console.log('AI History:', window.store.aiHistory);
-console.log('Analytics:', window.store.analyticsEvents);
-
 // Test that everything works:
 window.store.trackAIGeneration('test', { data: 'demo' });
 window.store.addPage(); // Original functionality still works!
