@@ -1,0 +1,18 @@
+/* Hide the Videos tab in the side panel */
+.polotno-side-panel-tab:has(.bp5-icon-video) {
+  display: none !important;
+}
+
+/* Fallback selector for browsers that don't support :has() */
+.bp5-icon-video {
+  display: none !important;
+}
+
+.polotno-side-panel-tab .bp5-icon-video {
+  display: none !important;
+}
+
+/* Target by the specific class if needed */
+.go3977838046.polotno-side-panel-tab:has([data-icon="video"]) {
+  display: none !important;
+}
