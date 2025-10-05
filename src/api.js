@@ -6,7 +6,6 @@ const getApiBaseUrl = () => '/api';
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');
-  console.log('🔑 Current auth token:', token ? 'EXISTS' : 'MISSING');
   
   return {
     'Authorization': `Token ${token}`,
@@ -33,10 +32,6 @@ const blobToBase64 = (blob) => {
 // Django API functions for designs
 export async function listDesigns() {
   try {
-    console.log('🔍 Fetching designs from API...');
-    console.log('API Base URL:', getApiBaseUrl());
-    console.log('Auth Headers:', getAuthHeaders());
-    
     const response = await fetch(`${getApiBaseUrl()}/designs/`, {
       headers: getAuthHeaders(),
     });

@@ -215,7 +215,6 @@ const AnalyticsDashboard = () => {
 // In browser console: use these to debug
 console.log('Original store:', window.originalStore);
 console.log('Enhanced store:', window.store);
-console.log('AI History:', window.store.aiHistory);
 console.log('Analytics:', window.store.analyticsEvents);
 
 // Test that everything works:
