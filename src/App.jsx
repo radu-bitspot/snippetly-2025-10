@@ -5,7 +5,7 @@ import { Spinner } from '@blueprintjs/core';
 import { PolotnoContainer, SidePanelWrap, WorkspaceWrap } from 'polotno';
 import { Toolbar } from 'polotno/toolbar/toolbar';
 import { ZoomButtons } from 'polotno/toolbar/zoom-buttons';
-import { SidePanel, DEFAULT_SECTIONS, INTERNAL_SECTIONS, VideosSection} from 'polotno/side-panel';
+import { SidePanel, DEFAULT_SECTIONS} from 'polotno/side-panel';
 import { Workspace } from 'polotno/canvas/workspace';
 import { PagesTimeline } from 'polotno/pages-timeline';
 import { setTranslations } from 'polotno/config';
