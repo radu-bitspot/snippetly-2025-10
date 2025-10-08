@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback, useMemo } from 'react';
 import { observer } from 'mobx-react-lite';
-import { TextArea, Card, Button, InputGroup } from '@blueprintjs/core';
+import { TextArea, Card, Button } from '@blueprintjs/core';
 
 import { SectionTab } from 'polotno/side-panel';
 
@@ -57,8 +57,7 @@ const styles = {
 const useAppState = () => {
   const [state, setState] = useState({
     loading: false,              // Dacă se încarcă ceva
-    inputText: '',              // Textul introdus de user
-    title: '',                  // Titlul pentru conținut
+  inputText: '',              // Textul introdus de user
     outputType: 'story-teaser', // Tipul de output selectat
     selectedTone: 'FORMAL-AUTORITAR', // Tonul selectat
     responseData: null,         // Răspunsul de la AI
@@ -371,7 +370,6 @@ export const SummarizePanel = observer(({ store }) => {
         updateState({
           selectedStoryTeaser: saved.selectedStoryTeaser || '',
           responseData: saved.responseData || null,
-          title: saved.title || '',
           outputType: saved.outputType || 'story-teaser'
         });
       }
@@ -397,19 +395,19 @@ export const SummarizePanel = observer(({ store }) => {
 
     try {
       // Apelează API-ul pentru generarea de conținut
-      const result = await generateSummary(state.inputText, state.title, state.outputType);
-      updateState({ responseData: result });
-      // Salvează rezultatul pentru persistență
-      save({ selectedStoryTeaser: '', responseData: result, title: state.title, outputType: state.outputType });
+  const result = await generateSummary(state.inputText, undefined, state.outputType);
+  updateState({ responseData: result });
+  // Salvează rezultatul pentru persistență
+  save({ selectedStoryTeaser: '', responseData: result, outputType: state.outputType });
     } catch (error) {
       console.error('Generation error:', error);
       updateState({ error: `Failed: ${error.message}` });
       
       // Fallback - creează un summary simplu local dacă API-ul nu funcționează
       const sentences = state.inputText.split(/[.!?]+/).filter(s => s.trim().length > 0);
-      const fallback = { title: state.title || 'Summary', description: sentences.slice(0, 3).join('. ') + '.' };
-      updateState({ responseData: fallback });
-      save({ selectedStoryTeaser: '', responseData: fallback, title: state.title, outputType: state.outputType });
+  const fallback = { title: 'Summary', description: sentences.slice(0, 3).join('. ') + '.' };
+  updateState({ responseData: fallback });
+  save({ selectedStoryTeaser: '', responseData: fallback, outputType: state.outputType });
     } finally {
       updateState({ loading: false }); // Oprește loading-ul indiferent de rezultat
     }
@@ -428,16 +426,15 @@ export const SummarizePanel = observer(({ store }) => {
     const teaser = state.storyTeasers.find(t => t.id === teaserId);
     if (teaser) {
       // Extrage conținutul JSON sau creează unul de fallback
-      const responseData = teaser.content_json || { title: teaser.title, description: 'No content available' };
+  const responseData = teaser.content_json || { description: 'No content available' };
       updateState({
         selectedStoryTeaser: teaserId,
         responseData,
-        title: teaser.title || '',
         outputType: teaser.type || 'story-teaser',
         error: ''
       });
       // Salvează selecția pentru persistență
-      save({ selectedStoryTeaser: teaserId, responseData, title: teaser.title, outputType: teaser.type });
+      save({ selectedStoryTeaser: teaserId, responseData, outputType: teaser.type });
     }
   };
 
@@ -446,7 +443,7 @@ export const SummarizePanel = observer(({ store }) => {
     updateState({
       responseData: null,
       inputText: '',
-      title: '',
+      // title removed
       error: '',
       selectedStoryTeaser: ''
     });
@@ -472,14 +469,7 @@ export const SummarizePanel = observer(({ store }) => {
   return (
     <div style={styles.container}>
       <div style={styles.section}>
-        <div style={styles.title}>Enter title, select type, and paste text</div>
-
-        <InputGroup
-          placeholder="Enter title (optional)"
-          value={state.title}
-          onChange={(e) => updateState({ title: e.target.value })}
-          style={styles.input}
-        />
+        <div style={styles.title}>Select type and paste text</div>
 
         {/* Database Selection */}
         <div style={{ marginBottom: '15px' }}>
