@@ -218,16 +218,16 @@ const PolotnoStudio = observer(({ store }) => {
       for (let i = 0; i < template.slides; i++) {
         store.addPage();
 
-      // Skip adding content if this is a blank template
-      if (template.id === 'blank') {
-        continue; // Just create empty pages
-      }
+        // Skip adding content if this is a truly blank template (no AI content)
+        if (template.id === 'blank') {
+          continue; // Just create empty pages
+        }
 
-      // Add template-specific content
-      const page = store.pages[i];
+        // Add template-specific content
+        const page = store.pages[i];
 
-      // If we have AI-generated content, use it
-      if (template.content && template.content.length > 0) {
+        // If we have AI-generated content, use it
+        if (template.content && template.content.length > 0) {
         console.log(`📝 Processing page ${i + 1} of ${template.slides}`);
         console.log('📝 Available content slides:', template.content.length);
 

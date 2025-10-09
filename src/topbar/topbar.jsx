@@ -170,22 +170,9 @@ export default observer(({ store, onBackToHome }) => {
           </div>
         </Navbar.Group>
         <Navbar.Group align={Alignment.RIGHT}>
-          <Status project={project} />
-
-          <AnchorButton
-            href="#"
-            minimal
-            icon={
-              <BiCodeBlock className="bp5-icon" style={{ fontSize: '20px' }} />
-            }
-          >
-            Help
-          </AnchorButton>
-          <NavbarDivider />
-          <PostProcessButton store={store} />
+          {/* Removed cloud status and Help button as requested */}
           <DownloadButton store={store} />
           <UserMenu store={store} project={project} />
-          {/* <NavbarHeading>Polotno Studio</NavbarHeading> */}
         </Navbar.Group>
       </NavInner>
     </NavbarContainer>

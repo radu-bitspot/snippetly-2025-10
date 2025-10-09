@@ -302,7 +302,19 @@ export const DownloadButton = observer(({ store }) => {
               )}
             </>
           )}
-          <Button fill intent="primary" loading={saving} onClick={handleExport}>
+          <Button
+            fill
+            loading={saving}
+            onClick={handleExport}
+            style={{
+              background: '#00ff5e',
+              color: '#000',
+              fontWeight: 800,
+              border: '2px solid #00d94f',
+              borderRadius: '8px',
+              boxShadow: '0 0 0 3px rgba(0,255,94,0.25)',
+            }}
+          >
             Download {type.toUpperCase()}
           </Button>
         </Menu>
@@ -311,10 +323,17 @@ export const DownloadButton = observer(({ store }) => {
     >
       <Button
         icon={<Import />}
-        text={t('toolbar.download')}
-        intent="primary"
+        text={`Download`}
         onClick={() => {
           setQuality(1);
+        }}
+        style={{
+          background: '#00ff5e',
+          color: '#000',
+          fontWeight: 800,
+          border: '2px solid #00d94f',
+          borderRadius: '8px',
+          boxShadow: '0 0 0 3px rgba(0,255,94,0.25)',
         }}
       />
     </Popover>
