@@ -49,7 +49,7 @@ const getImageFilePreview = (file) => {
 
 // Determină URL-ul API-ului în funcție de environment
 const getApiBaseUrl = () => 
-  window.location.hostname === 'localhost' ? '/api' : 'http://79.137.67.72:8000/api';
+  window.location.hostname === 'localhost' ? '/api' : 'https://snippetly.ro/api';
 
 // Creează header-ele de autentificare pentru API calls
 const getAuthHeaders = () => ({

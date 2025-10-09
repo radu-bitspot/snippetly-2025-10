@@ -111,7 +111,7 @@ const usePersistence = () => {
 // Hook pentru apelurile API - comunicarea cu serverul
 const useAPI = () => {
   // Determină URL-ul de bază în funcție de environment
-  const getBaseUrl = () => window.location.hostname === 'localhost' ? '/api' : 'http://79.137.67.72:8000/api';
+  const getBaseUrl = () => window.location.hostname === 'localhost' ? '/api' : 'https://snippetly.ro/api';
   // Ia token-ul de autentificare din localStorage
   const getToken = () => localStorage.getItem('authToken');
 
