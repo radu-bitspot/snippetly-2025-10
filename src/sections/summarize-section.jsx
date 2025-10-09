@@ -123,8 +123,7 @@ const useAPI = () => {
     try {
       let allTeasers = [];
       let nextUrl = `${getBaseUrl()}/story-teasers/`;
-      debugger
-      
+
       // Iterează prin toate paginile de date (pagination)
       while (nextUrl) {
         const response = await fetch(nextUrl, {
