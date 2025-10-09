@@ -16,6 +16,13 @@ export default defineConfig({
   server: {
     host: '0.0.0.0',
     port: 5173,
+    allowedHosts: [
+      'snippetly.ro',
+      'www.snippetly.ro',
+      'localhost',
+      '127.0.0.1',
+      '79.137.67.72'
+    ],
     proxy: {
       '/api': {
         target: 'http://79.137.67.72:8000',
