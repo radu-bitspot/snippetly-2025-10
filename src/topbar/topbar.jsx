@@ -4,6 +4,7 @@ import {
   Navbar,
   Alignment,
   AnchorButton,
+  Button,
   NavbarDivider,
   EditableText,
   Popover,
@@ -74,7 +75,7 @@ const Status = observer(({ project }) => {
   );
 });
 
-export default observer(({ store }) => {
+export default observer(({ store, onBackToHome }) => {
   const project = useProject();
 
   return (
@@ -90,16 +91,67 @@ export default observer(({ store }) => {
           >
             <div
               style={{
-                fontSize: '18px',
+                fontSize: '20px',
                 fontWeight: 'bold',
-                color: '#137cbd',
+                color: '#000000',
                 marginRight: '15px',
+                letterSpacing: '-0.5px',
               }}
             >
               Snippetly Studio
             </div>
           </div>
           <NavbarDivider />
+          <Button
+            icon="document"
+            text="New Design"
+            onClick={() => {
+              if (window.confirm('Create a new design? Unsaved changes will be lost.')) {
+                window.location.reload();
+              }
+            }}
+            style={{
+              marginRight: '10px',
+              background: '#ffffff',
+              color: '#000000',
+              fontWeight: '600',
+              fontSize: '14px',
+              padding: '8px 16px',
+              borderRadius: '8px',
+              border: '2px solid #000000',
+              transition: 'all 0.3s ease',
+            }}
+          />
+          {onBackToHome && (
+            <>
+              <Button
+                icon="flash"
+                text="✨ Simple Mode"
+                onClick={onBackToHome}
+                style={{ 
+                  marginRight: '10px',
+                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  color: 'white',
+                  fontWeight: '700',
+                  fontSize: '15px',
+                  padding: '8px 24px',
+                  borderRadius: '8px',
+                  border: 'none',
+                  boxShadow: '0 4px 12px rgba(102, 126, 234, 0.4)',
+                  transition: 'all 0.3s ease',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.transform = 'translateY(-2px)';
+                  e.currentTarget.style.boxShadow = '0 6px 20px rgba(102, 126, 234, 0.6)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.transform = 'translateY(0)';
+                  e.currentTarget.style.boxShadow = '0 4px 12px rgba(102, 126, 234, 0.4)';
+                }}
+              />
+              <NavbarDivider />
+            </>
+          )}
           <FileMenu store={store} project={project} />
           <div
             style={{

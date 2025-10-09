@@ -5,12 +5,14 @@ import { Upload, Trash } from '@blueprintjs/icons';
 import {
   ImagesGrid,
   UploadSection as DefaultUploadSection,
+  SectionTab,
 } from 'polotno/side-panel';
 import { getImageSize, getCrop } from 'polotno/utils/image';
 import { dataURLtoBlob } from '../blob';
 import { CloudWarning } from '../cloud-warning';
 import { useProject } from '../project';
 import { listAssets, uploadAsset, deleteAsset } from '../api';
+import MdImage from '@meronex/icons/md/MdImage';
 
 // ============================================
 // FUNCȚII HELPER - Utilitare pentru procesarea fișierelor
@@ -442,8 +444,12 @@ export const UploadPanel = observer(({ store }) => {
 // ============================================
 
 const UploadSection = {
-  name: 'upload',                    // Numele unic al secțiunii
-  Tab: DefaultUploadSection.Tab,     // Folosește tab-ul default din Polotno
+  name: 'upload',                    // Numele unic al secțiunii (ID intern)
+  Tab: (props) => (
+    <SectionTab name="Images" {...props}>
+      <MdImage />
+    </SectionTab>
+  ),
   Panel: UploadPanel,                // Componenta personalizată a panelului
 };
 

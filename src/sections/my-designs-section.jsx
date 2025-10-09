@@ -102,21 +102,32 @@ const DesignDialog = ({ isOpen, onClose, onSave, design = null, mode = 'create' 
 const DesignCard = observer(({ design, store, onDelete, onEdit, refreshKey }) => {
   const [loading, setLoading] = React.useState(false);
   const [previewURL, setPreviewURL] = React.useState('');
+  const [previewLoading, setPreviewLoading] = React.useState(true);
 
   React.useEffect(() => {
     // Întotdeauna încarcă preview-ul fresh - cu cache buster pentru a evita cache-ul browser-ului
-    console.log('🖼️ DesignCard useEffect triggered for design:', design.id, 'refreshKey:', refreshKey);
+    console.log('🖼️ DesignCard useEffect triggered for design:', design.id, 'name:', design.name, 'refreshKey:', refreshKey);
+    
+    setPreviewLoading(true);
+    
     const loadPreview = async () => {
-      if (design.previewURL) {
-        // URL-ul vine deja cu cache-buster din API (bazat pe updated_at)
-        console.log('🖼️ Loading preview URL:', design.previewURL);
+      try {
+        // 1. PRIORITATE: Încearcă să încarce preview-ul din storage local (RAPID!)
+        const storage = (await import('../storage')).storage;
+        const userId = localStorage.getItem('userId') || 'anonymous';
+        const localPreview = await storage.getItem(`preview-${userId}-${design.id}`);
+        if (localPreview) {
+          console.log('🖼️ ✅ Using cached local preview for user:', userId, 'design:', design.id);
+          setPreviewURL(localPreview);
+          setPreviewLoading(false);
+          return;
+        }
         
-        // Pentru endpoint-ul Django, trebuie să facem fetch cu autentificare
-        try {
-          const token = localStorage.getItem('authToken');
-          console.log('🖼️ Fetching preview with token:', token ? 'EXISTS' : 'MISSING');
-          console.log('🖼️ Fetching URL:', design.previewURL);
+        // 2. Dacă nu există local, încearcă să încarce de pe server
+        if (design.previewURL) {
+          console.log('🖼️ Loading preview from server:', design.previewURL);
           
+          const token = localStorage.getItem('authToken');
           const response = await fetch(design.previewURL, {
             headers: {
               'Authorization': `Token ${token}`,
@@ -124,62 +135,81 @@ const DesignCard = observer(({ design, store, onDelete, onEdit, refreshKey }) =>
           });
           
           console.log('🖼️ Response status:', response.status);
-          console.log('🖼️ Response headers:', Object.fromEntries(response.headers));
           
           if (response.ok) {
             const blob = await response.blob();
-            console.log('🖼️ Blob size:', blob.size, 'type:', blob.type);
+            console.log('🖼️ Blob received - size:', blob.size, 'type:', blob.type);
+            
+            if (blob.size < 100) {
+              console.warn('🖼️ Preview blob is suspiciously small, might be empty');
+            }
+            
             const objectURL = URL.createObjectURL(blob);
-            console.log('🖼️ Created object URL for preview:', objectURL);
             setPreviewURL(objectURL);
+            
+            // Salvează în cache local pentru viitor (specific userului)
+            const reader = new FileReader();
+            reader.onloadend = async () => {
+              await storage.setItem(`preview-${userId}-${design.id}`, reader.result);
+              console.log('🖼️ Preview cached locally for user:', userId, 'design:', design.id);
+            };
+            reader.readAsDataURL(blob);
           } else {
             console.error('🖼️ Failed to fetch preview, status:', response.status);
             const errorText = await response.text();
             console.error('🖼️ Error response:', errorText);
-            throw new Error(`HTTP ${response.status}`);
-          }
-        } catch (error) {
-          console.error('🖼️ Error fetching preview with auth:', error);
-          // Nu seta un URL gol - folosește placeholder
-          const canvas = document.createElement('canvas');
-          canvas.width = 200;
-          canvas.height = 200;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#f0f0f0';
-          ctx.fillRect(0, 0, 200, 200);
-          ctx.fillStyle = '#999';
-          ctx.font = '16px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Loading...', 100, 100);
-          setPreviewURL(canvas.toDataURL());
-        }
-      } else {
-        console.log('🖼️ No preview URL in design data, trying API call...');
-        try {
-          const url = await api.getPreview({ id: design.id });
-          if (url) {
-            // URL-ul din getPreview este deja un blob URL unic
-            console.log('🖼️ Loaded preview from API:', url);
-            setPreviewURL(url);
-          } else {
-            console.log('🖼️ No preview available, using placeholder');
-            // Create a simple placeholder
+            
+            // Create error placeholder
             const canvas = document.createElement('canvas');
             canvas.width = 200;
             canvas.height = 200;
             const ctx = canvas.getContext('2d');
-            ctx.fillStyle = '#f0f0f0';
+            ctx.fillStyle = '#ffebee';
             ctx.fillRect(0, 0, 200, 200);
-            ctx.fillStyle = '#999';
-            ctx.font = '16px Arial';
+            ctx.fillStyle = '#c62828';
+            ctx.font = '14px Arial';
             ctx.textAlign = 'center';
-            ctx.fillText('No Preview', 100, 100);
+            ctx.fillText('Preview Error', 100, 90);
+            ctx.font = '12px Arial';
+            ctx.fillText(`HTTP ${response.status}`, 100, 110);
             setPreviewURL(canvas.toDataURL());
           }
-        } catch (e) {
-          console.error('🖼️ Failed to load preview:', e);
-          setPreviewURL(null);
+        } else {
+          console.log('🖼️ No preview URL, using placeholder');
+          // Create a placeholder for designs without preview
+          const canvas = document.createElement('canvas');
+          canvas.width = 200;
+          canvas.height = 200;
+          const ctx = canvas.getContext('2d');
+          ctx.fillStyle = '#e3f2fd';
+          ctx.fillRect(0, 0, 200, 200);
+          ctx.fillStyle = '#1976d2';
+          ctx.font = '16px Arial';
+          ctx.textAlign = 'center';
+          ctx.fillText('📄', 100, 90);
+          ctx.font = '12px Arial';
+          ctx.fillText('No Preview', 100, 120);
+          setPreviewURL(canvas.toDataURL());
         }
+      } catch (error) {
+        console.error('🖼️ Error loading preview:', error);
+        
+        // Generic error placeholder
+        const canvas = document.createElement('canvas');
+        canvas.width = 200;
+        canvas.height = 200;
+        const ctx = canvas.getContext('2d');
+        ctx.fillStyle = '#fff3e0';
+        ctx.fillRect(0, 0, 200, 200);
+        ctx.fillStyle = '#e65100';
+        ctx.font = '14px Arial';
+        ctx.textAlign = 'center';
+        ctx.fillText('⚠️', 100, 85);
+        ctx.font = '12px Arial';
+        ctx.fillText('Load Error', 100, 115);
+        setPreviewURL(canvas.toDataURL());
+      } finally {
+        setPreviewLoading(false);
       }
     };
 
@@ -191,7 +221,7 @@ const DesignCard = observer(({ design, store, onDelete, onEdit, refreshKey }) =>
         URL.revokeObjectURL(previewURL);
       }
     };
-  }, [design.previewURL, design.id, refreshKey]); // Adaugă refreshKey ca dependență
+  }, [design.previewURL, design.id, refreshKey]); // Adaugă refreshKey ca dependință
 
   const handleSelect = async () => {
     setLoading(true);
@@ -207,37 +237,76 @@ const DesignCard = observer(({ design, store, onDelete, onEdit, refreshKey }) =>
         handleSelect();
       }}
     >
-      <img 
-        src={previewURL} 
-        style={{ width: '100%', minHeight: '100px', objectFit: 'cover' }}
-        onError={(e) => {
-          console.error('🖼️ Image failed to load:', previewURL);
-          console.error('🖼️ Error details:', e);
-          console.error('🖼️ Design data:', design);
-          // Create fallback placeholder
-          const canvas = document.createElement('canvas');
-          canvas.width = 200;
-          canvas.height = 100;
-          const ctx = canvas.getContext('2d');
-          ctx.fillStyle = '#e0e0e0';
-          ctx.fillRect(0, 0, 200, 100);
-          ctx.fillStyle = '#666';
-          ctx.font = '12px Arial';
-          ctx.textAlign = 'center';
-          ctx.fillText('Preview Error', 100, 55);
-          e.target.src = canvas.toDataURL();
-        }}
-      />
+      {previewLoading && !previewURL ? (
+        <div style={{ 
+          width: '100%', 
+          minHeight: '100px', 
+          display: 'flex', 
+          alignItems: 'center', 
+          justifyContent: 'center',
+          backgroundColor: '#f5f5f5'
+        }}>
+          <Spinner size={20} />
+        </div>
+      ) : (
+        <img 
+          src={previewURL} 
+          style={{ width: '100%', minHeight: '100px', objectFit: 'cover' }}
+          onError={(e) => {
+            console.error('🖼️ Image failed to load:', previewURL);
+            console.error('🖼️ Error details:', e);
+            console.error('🖼️ Design data:', design);
+            // Create fallback placeholder
+            const canvas = document.createElement('canvas');
+            canvas.width = 200;
+            canvas.height = 100;
+            const ctx = canvas.getContext('2d');
+            ctx.fillStyle = '#e0e0e0';
+            ctx.fillRect(0, 0, 200, 100);
+            ctx.fillStyle = '#666';
+            ctx.font = '12px Arial';
+            ctx.textAlign = 'center';
+            ctx.fillText('Preview Error', 100, 55);
+            e.target.src = canvas.toDataURL();
+          }}
+        />
+      )}
       <div
         style={{
-          overflow: 'hidden',
-          textOverflow: 'ellipsis',
-          whiteSpace: 'nowrap',
-          padding: '3px',
+          padding: '8px',
+          fontSize: '13px',
+          lineHeight: '1.4',
+          wordBreak: 'break-word',
+          minHeight: '40px',
         }}
       >
         {design.name || 'Untitled'}
       </div>
+      {/* Display tags */}
+      {design.tags && design.tags.length > 0 && (
+        <div style={{
+          padding: '4px 8px 8px 8px',
+          display: 'flex',
+          flexWrap: 'wrap',
+          gap: '4px'
+        }}>
+          {design.tags.map((tag, idx) => (
+            <span
+              key={idx}
+              style={{
+                fontSize: '10px',
+                backgroundColor: '#137cbd',
+                color: 'white',
+                padding: '2px 6px',
+                borderRadius: '3px',
+                fontWeight: '500'
+              }}
+            >
+              {tag}
+            </span>
+          ))}
+        </div>
+      )}
       {loading && (
         <div
           style={{

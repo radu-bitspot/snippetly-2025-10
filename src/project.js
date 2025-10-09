@@ -25,6 +25,7 @@ const setToStorage = (key, value) => {
 class Project {
   id = '';
   name = '';
+  tags = []; // Tags for categorizing: format type, content type, etc.
   user = {};
   skipSaving = false;
   cloudEnabled = false;
@@ -35,8 +36,16 @@ class Project {
   constructor({ store }) {
     mobx.makeAutoObservable(this);
     this.store = store;
+    this.lastSavedJSON = null; // Track last saved state
 
     store.on('change', () => {
+      // Only trigger save if content actually changed
+      const currentJSON = JSON.stringify(this.store.toJSON());
+      if (this.lastSavedJSON && currentJSON === this.lastSavedJSON) {
+        console.log('🔇 Change detected but content unchanged, skipping save');
+        return;
+      }
+      console.log('✏️ Real content change detected, requesting save');
       this.requestSave();
     });
 
@@ -45,7 +54,7 @@ class Project {
         this.cloudEnabled = window.puter?.auth?.isSignedIn();
       });
     }, 100);
-    
+
     console.log('🏗️ Project initialization complete');
   }
 
@@ -59,23 +68,33 @@ class Project {
     if (this.saveTimeout) {
       return;
     }
+    // Increase timeout to 10 seconds to reduce aggressive saving
     this.saveTimeout = setTimeout(() => {
       this.saveTimeout = null;
       this.save();
-    }, 5000);
+    }, 10000); // Changed from 5000 to 10000
   }
 
   async firstLoad() {
+    console.log('🚀 FirstLoad started...');
     const deprecatedDesign = await storage.getItem('polotno-state');
     if (deprecatedDesign) {
+      console.log('🚀 Found deprecated design, migrating...');
       this.store.loadJSON(deprecatedDesign);
+      this.lastSavedJSON = JSON.stringify(deprecatedDesign);
       await storage.removeItem('polotno-state');
       await this.save();
       return;
     }
     const lastDesignId = await storage.getItem('polotno-last-design-id');
+    console.log('🚀 Last design ID from storage:', lastDesignId);
     if (lastDesignId) {
+      console.log('🚀 Loading last design...');
       await this.loadById(lastDesignId);
+    } else {
+      console.log('🚀 No previous design found, starting fresh (no auto-save)');
+      // Set initial state to prevent immediate save
+      this.lastSavedJSON = JSON.stringify(this.store.toJSON());
     }
   }
 
@@ -90,10 +109,11 @@ class Project {
         id,
       });
       console.log('📂 API response - name:', name, 'storeJSON size:', storeJSON ? JSON.stringify(storeJSON).length : 'null');
-      
+
       if (storeJSON) {
         console.log('📂 Loading JSON into store...');
         this.store.loadJSON(storeJSON);
+        this.lastSavedJSON = JSON.stringify(storeJSON); // Store loaded state
         console.log('📂 Store loaded, current pages:', this.store.pages.length);
       }
       this.name = name;
@@ -123,24 +143,47 @@ class Project {
     console.log('💾 Starting save process...');
     console.log('💾 Current design ID:', this.id);
     console.log('💾 Current design name:', this.name);
-    
+
     this.status = 'saving';
     const storeJSON = this.store.toJSON();
-    console.log('💾 Store JSON generated, size:', JSON.stringify(storeJSON).length);
+    const currentJSON = JSON.stringify(storeJSON);
+    console.log('💾 Store JSON generated, size:', currentJSON.length);
+
+    // Check if content actually changed since last save
+    if (this.lastSavedJSON && currentJSON === this.lastSavedJSON) {
+      console.log('💾 Content unchanged since last save, skipping save');
+      this.status = 'saved';
+      return;
+    }
     
     const maxWidth = 200;
-    const canvas = this.store.pages.length
-      ? await this.store._toCanvas({
+    let canvas;
+    
+    if (this.store.pages.length) {
+      try {
+        // Try with normal mode first for better quality
+        canvas = await this.store._toCanvas({
           pixelRatio: maxWidth / this.store.activePage?.computedWidth,
           pageId: this.store.activePage?.id,
-          // two options for faster preview
+        });
+        console.log('💾 Canvas created (normal mode):', canvas.width + 'x' + canvas.height);
+      } catch (e) {
+        console.warn('💾 Normal canvas failed, trying quickMode:', e);
+        // Fallback to quickMode if normal fails
+        canvas = await this.store._toCanvas({
+          pixelRatio: maxWidth / this.store.activePage?.computedWidth,
+          pageId: this.store.activePage?.id,
           quickMode: true,
           _skipTimeout: true,
-        })
-      : // if there is no page, create a dummy canvas
-        document.createElement('canvas');
+        });
+        console.log('💾 Canvas created (quick mode):', canvas.width + 'x' + canvas.height);
+      }
+    } else {
+      // if there is no page, create a dummy canvas
+      canvas = document.createElement('canvas');
+      console.log('💾 No pages, using dummy canvas');
+    }
     
-    console.log('💾 Canvas created:', canvas.width + 'x' + canvas.height);
     console.log('💾 Current page elements when generating preview:', this.store.activePage?.children?.length || 0);
     
     const blob = await new Promise((resolve) => {
@@ -149,6 +192,11 @@ class Project {
     
     console.log('💾 Preview blob created, size:', blob.size);
     
+    // Warn if blob is suspiciously small (might be empty/white canvas)
+    if (blob && blob.size < 1000) {
+      console.warn('⚠️ Preview blob is very small (', blob.size, 'bytes) - might be empty or mostly white');
+    }
+    
     try {
       console.log('💾 Calling API saveDesign...');
       const res = await api.saveDesign({
@@ -156,23 +204,36 @@ class Project {
         preview: blob,
         id: this.id,
         name: this.name,
+        tags: this.tags,
       });
       
       console.log('💾 API response:', res);
       
       if (res.status === 'saved') {
         this.id = res.id;
+        this.lastSavedJSON = currentJSON; // Update last saved state
         await storage.setItem('polotno-last-design-id', res.id);
         console.log('💾 Design saved successfully with ID:', res.id);
-        
+
+        // Salvează preview-ul local pentru accesare rapidă (specific userului)
+        const previewDataURL = await new Promise((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => resolve(reader.result);
+          reader.readAsDataURL(blob);
+        });
+        const userId = localStorage.getItem('userId') || 'anonymous';
+        await storage.setItem(`preview-${userId}-${res.id}`, previewDataURL);
+        console.log('💾 Preview saved locally for user:', userId, 'design:', res.id);
+
         // Notificare că design-ul a fost salvat cu succes - pentru a actualiza preview-ul în lista de design-uri
-        window.dispatchEvent(new CustomEvent('designSaved', { 
-          detail: { 
-            id: res.id, 
+        window.dispatchEvent(new CustomEvent('designSaved', {
+          detail: {
+            id: res.id,
             name: this.name,
             preview: blob,
+            previewDataURL: previewDataURL,
             timestamp: Date.now()
-          } 
+          }
         }));
         console.log('💾 Design saved event dispatched with timestamp:', Date.now());
       }
