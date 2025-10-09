@@ -36,6 +36,7 @@ import Topbar from './topbar/topbar';
 import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import LoadingScreen from './components/LoadingScreen';
+import LandingPage from './pages/LandingPage';
 
 // load default translations
 setTranslations(en);
@@ -112,6 +113,9 @@ const useHeight = () => {
 const PolotnoStudio = observer(({ store }) => {
   const project = useProject();
   const height = useHeight();
+  const [showLanding, setShowLanding] = React.useState(true); // Start with Simple Mode (landing page)
+  const [selectedTemplate, setSelectedTemplate] = React.useState(null);
+  const [defaultSection, setDefaultSection] = React.useState("my-designs"); // Dynamic default section
 
   React.useEffect(() => {
     if (project.language.startsWith('fr')) {
@@ -132,6 +136,246 @@ const PolotnoStudio = observer(({ store }) => {
   React.useEffect(() => {
     project.firstLoad();
   }, []);
+
+  const handleStartFromTemplate = async (template) => {
+    setSelectedTemplate(template);
+    
+    // If a design is selected, DUPLICATE it (don't modify original!)
+    if (template.selectedDesign) {
+      console.log('📂 Duplicating design:', template.selectedDesign.id);
+      
+      // Load the design structure
+      const { storeJSON } = await api.loadById({ id: template.selectedDesign.id });
+      
+      // Clear store and load the JSON (this duplicates the design)
+      store.clear();
+      if (storeJSON) {
+        store.loadJSON(storeJSON);
+        console.log('📂 Design structure duplicated, pages:', store.pages.length);
+      }
+      
+      // Now apply AI content to pages
+      if (template.content && template.content.length > 0) {
+        const pages = store.pages || [];
+        console.log('📝 Applying AI content to', pages.length, 'pages');
+        
+        pages.forEach((page, pageIndex) => {
+          const slideIndex = pageIndex % template.content.length;
+          const slideContent = template.content[slideIndex];
+          
+          if (slideContent) {
+            const content = slideContent.variations?.[0]?.content || 
+                           slideContent.content || 
+                           slideContent.text;
+            
+            console.log('📝 Slide content for page', pageIndex + 1, ':', content?.substring(0, 50) + '...');
+            
+            // Find text elements and replace content
+            const textElements = page.children?.filter(el => el.type === 'text') || [];
+            if (textElements.length > 0 && content) {
+              textElements[0].set({ text: content });
+              console.log('✅ Page', pageIndex + 1, 'updated with AI content');
+            } else if (content) {
+              // If no text element, create one
+              page.addElement({
+                type: 'text',
+                text: content,
+                x: 50,
+                y: 100,
+                width: store.width - 100,
+                fontSize: 20,
+                fill: '#2d3748',
+                lineHeight: 1.5
+              });
+              console.log('✅ Page', pageIndex + 1, 'created text element with AI content');
+            }
+          }
+        });
+      }
+      
+      // Set as NEW design (no ID = will create new on save)
+      project.id = '';
+      project.name = template.title || 'Duplicated Design';
+      
+      // Set tags
+      const tags = [...(template.selectedDesign.tags || [])];
+      if (template.outputType && !tags.includes(template.outputType)) {
+        tags.push(template.outputType);
+      }
+      project.tags = tags;
+      console.log('📋 New design tags:', tags);
+      
+    } else {
+      // Clear the store and add pages based on template
+      store.clear();
+      
+      // Set page dimensions if format is provided
+      if (template.format) {
+        store.setSize(template.format.width, template.format.height);
+      }
+      
+      // Add the number of pages specified in template
+      for (let i = 0; i < template.slides; i++) {
+        store.addPage();
+
+        // Skip adding content if this is a truly blank template (no AI content)
+        if (template.id === 'blank') {
+          continue; // Just create empty pages
+        }
+
+        // Add template-specific content
+        const page = store.pages[i];
+
+        // If we have AI-generated content, use it
+        if (template.content && template.content.length > 0) {
+        console.log(`📝 Processing page ${i + 1} of ${template.slides}`);
+        console.log('📝 Available content slides:', template.content.length);
+
+        // Ciclează prin slide-uri dacă sunt mai multe pagini decât slide-uri
+        const slideIndex = i % template.content.length;
+        const slideContent = template.content[slideIndex];
+
+        console.log(`📝 Slide ${i + 1} using content index ${slideIndex}:`, slideContent);
+
+        if (slideContent) {
+          // Extrage conținutul (poate avea variations pentru diferite tone-uri)
+          const content = slideContent.variations?.[0]?.content ||
+                         slideContent.content ||
+                         slideContent.text ||
+                         `Slide ${i + 1}`;
+
+          const title = slideContent.title ||
+                       slideContent.variations?.[0]?.title ||
+                       null;
+
+          console.log(`📝 Extracted - Title: "${title}", Content: "${content?.substring(0, 100)}..."`);
+
+          // Add title if exists
+          if (title) {
+            page.addElement({
+              type: 'text',
+              text: title,
+              x: 50,
+              y: 50,
+              width: store.width - 100,
+              fontSize: 40,
+              fontWeight: 'bold',
+              fill: '#2d3748',
+              align: 'center'
+            });
+            console.log(`✅ Added title to page ${i + 1}`);
+          }
+
+          // Add main content
+          if (content) {
+            page.addElement({
+              type: 'text',
+              text: content,
+              x: 50,
+              y: title ? 150 : 100,
+              width: store.width - 100,
+              fontSize: 20,
+              fill: '#4a5568',
+              lineHeight: 1.5,
+              align: 'left'
+            });
+            console.log(`✅ Added content to page ${i + 1}`);
+          } else {
+            console.warn(`⚠️ No content found for page ${i + 1}`);
+          }
+        } else {
+          console.warn(`⚠️ No slide content at index ${slideIndex} for page ${i + 1}`);
+        }
+        } else {
+          console.log(`📝 Page ${i + 1} - No AI content available, creating blank page`);
+        }
+      }
+      
+      // Set as NEW design (no ID = will create new on save)
+      project.id = '';
+      project.name = template.title || 'Untitled Presentation';
+
+      // Set tags based on template
+      const tags = [];
+      if (template.format) {
+        tags.push(template.format.id); // 'instagram', 'facebook', 'tiktok', etc.
+      }
+      if (template.outputType) {
+        tags.push(template.outputType); // 'story-teaser', 'key-points', etc.
+      }
+      project.tags = tags;
+      console.log('📋 Project tags set:', tags);
+    }
+    
+    // Hide landing page and show editor FIRST
+    setShowLanding(false);
+
+    // Prevent auto-save from creating a brand-new draft immediately
+    // Take a snapshot of current store so first autosave is skipped until user edits
+    try {
+      project.lastSavedJSON = JSON.stringify(store.toJSON());
+      if (project.saveTimeout) {
+        clearTimeout(project.saveTimeout);
+        project.saveTimeout = null;
+      }
+      project.status = 'saved';
+    } catch (e) {
+      console.warn('Could not sync lastSavedJSON after template start:', e);
+    }
+
+    // If we have AI content, prepare it for Summarize tab
+    if (template.content && template.content.length > 0) {
+      console.log('🤖 AI content detected, preparing Summarize tab...');
+
+      // Set default section to summarize when AI content is present
+      setDefaultSection("summarize");
+
+      // Wait for workspace to mount, then trigger Summarize tab
+      setTimeout(() => {
+        try {
+          // Store AI response in localStorage for Summarize tab to pick up
+          const aiData = {
+            slides: template.content,
+            title: template.title,
+            outputType: template.outputType,
+            timestamp: Date.now(),
+            autoApply: true // Flag to auto-apply on Summarize tab
+          };
+
+          localStorage.setItem('summarize_ai_handoff', JSON.stringify(aiData));
+          console.log('🤖 AI data stored for Summarize tab:', aiData);
+
+          // Dispatch event to notify Summarize tab
+          window.dispatchEvent(new CustomEvent('aiContentReady', { detail: aiData }));
+          console.log('🤖 Event dispatched: aiContentReady');
+
+        } catch (e) {
+          console.error('❌ Failed to prepare AI content:', e);
+        }
+      }, 100);
+    }
+
+    // DON'T auto-save here - let the normal auto-save mechanism handle it
+    // This prevents creating duplicate designs on refresh
+    console.log('⏭️ Skipping immediate save - auto-save will handle it if needed');
+  };
+
+  const handleSkipToEditor = () => {
+    setShowLanding(false);
+  };
+
+  const handleBackToLanding = () => {
+    setShowLanding(true);
+  };
+
+  // Show landing page first
+  if (showLanding) {
+    return (
+      <LandingPage 
+        onStart={handleStartFromTemplate}
+      />
+    );
+  }
 
   const handleDrop = (ev) => {
     // Prevent default behavior (Prevent file from being opened)
@@ -158,11 +402,11 @@ const PolotnoStudio = observer(({ store }) => {
       }}
       onDrop={handleDrop}
     >
-      <Topbar store={store} />
+      <Topbar store={store} onBackToHome={handleBackToLanding} />
       <div style={{ height: 'calc(100% - 50px)' }}>
         <PolotnoContainer className="polotno-app-container">
           <SidePanelWrap>
-            <SidePanel store={store} sections={FINAL_SECTIONS} defaultSection={"my-designs"} />
+            <SidePanel store={store} sections={FINAL_SECTIONS} defaultSection={defaultSection} />
           </SidePanelWrap>
           <WorkspaceWrap>
             <Toolbar store={store} />

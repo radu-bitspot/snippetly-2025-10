@@ -5,21 +5,22 @@ import styled from 'polotno/utils/styled';
 
 const LoginContainer = styled('div')`
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+  background: #f5f5f5;
   display: flex;
   align-items: center;
   justify-content: center;
   padding: 20px;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Courier Prime', 'Courier New', monospace;
 `;
 
 const LoginCard = styled(Card)`
   padding: 40px;
   max-width: 420px;
   width: 100%;
-  background: #2f343c;
+  background: #ffffff;
   border-radius: 12px;
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.15);
+  border: 2px solid #000000;
 `;
 
 const Logo = styled('div')`
@@ -28,7 +29,7 @@ const Logo = styled('div')`
 `;
 
 const LogoText = styled('h1')`
-  color: #f5f8fa;
+  color: #ffffff;
   font-size: 32px;
   font-weight: 700;
   margin: 0 0 8px 0;
@@ -36,7 +37,7 @@ const LogoText = styled('h1')`
 `;
 
 const LogoSubtext = styled('p')`
-  color: #8a9ba8;
+  color: #999999;
   font-size: 16px;
   margin: 0;
   font-weight: 400;
@@ -51,30 +52,30 @@ const Label = styled('label')`
   margin-bottom: 8px;
   font-size: 14px;
   font-weight: 500;
-  color: #f5f8fa;
+  color: #ffffff;
 `;
 
 const StyledInputGroup = styled(InputGroup)`
   .bp5-input {
-    background: #394b59;
-    border: 1px solid #5c7080;
-    color: #f5f8fa;
+    background: #ffffff;
+    border: 2px solid #cccccc;
+    color: #000000;
     font-size: 16px;
     padding: 12px 16px;
     border-radius: 8px;
-    
+
     &:focus {
-      border-color: #137cbd;
-      box-shadow: 0 0 0 3px rgba(19, 124, 189, 0.3);
+      border-color: #000000;
+      box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.1);
     }
-    
+
     &::placeholder {
-      color: #8a9ba8;
+      color: #999999;
     }
   }
-  
+
   .bp5-icon {
-    color: #8a9ba8;
+    color: #666666;
   }
 `;
 
@@ -85,20 +86,23 @@ const LoginButton = styled(Button)`
   font-weight: 600;
   border-radius: 8px;
   transition: all 0.2s ease;
-  
+  background: #000000 !important;
+  color: #ffffff !important;
+
   &:hover:not(:disabled) {
     transform: translateY(-1px);
-    box-shadow: 0 8px 25px rgba(19, 124, 189, 0.4);
+    box-shadow: 0 8px 25px rgba(0, 0, 0, 0.3);
+    background: #2a2a2a !important;
   }
 `;
 
 const ForgotPassword = styled(Button)`
   margin-top: 16px;
-  color: #8a9ba8;
+  color: #999999;
   font-size: 14px;
-  
+
   &:hover {
-    color: #137cbd;
+    color: #ffffff;
   }
 `;
 
@@ -108,7 +112,7 @@ const LoadingOverlay = styled('div')`
   left: 0;
   right: 0;
   bottom: 0;
-  background: rgba(47, 52, 60, 0.8);
+  background: rgba(255, 255, 255, 0.9);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -229,12 +233,12 @@ const LoginPage = () => {
           </div>
         </form>
 
-        <div style={{ 
-          textAlign: 'center', 
-          marginTop: '32px', 
+        <div style={{
+          textAlign: 'center',
+          marginTop: '32px',
           paddingTop: '24px',
-          borderTop: '1px solid #5c7080',
-          color: '#8a9ba8',
+          borderTop: '1px solid #555555',
+          color: '#999999',
           fontSize: '14px'
         }}>
           Secure login powered by your Django backend

@@ -4,16 +4,16 @@ import styled from 'polotno/utils/styled';
 
 const LoadingContainer = styled('div')`
   min-height: 100vh;
-  background: linear-gradient(135deg, #1a1a1a 0%, #2d3748 100%);
+  background: #f5f5f5;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-family: 'Courier Prime', 'Courier New', monospace;
 `;
 
 const LogoText = styled('h1')`
-  color: #f5f8fa;
+  color: #000000;
   font-size: 32px;
   font-weight: 700;
   margin: 0 0 20px 0;
@@ -21,7 +21,7 @@ const LogoText = styled('h1')`
 `;
 
 const LoadingText = styled('p')`
-  color: #8a9ba8;
+  color: #666666;
   font-size: 16px;
   margin: 20px 0 0 0;
   font-weight: 400;

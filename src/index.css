@@ -1,7 +1,98 @@
+/* Import typewriter font */
+@import url('https://fonts.googleapis.com/css2?family=Courier+Prime:ital,wght@0,400;0,700;1,400;1,700&display=swap');
+
+/* Global typewriter font */
+* {
+  font-family: 'Courier Prime', 'Courier New', monospace !important;
+}
+
+/* Keep original editor theme - don't override */
+
 /* Hide the play button from Pages Timeline */
 .polotno-pages-timeline button.bp5-button:has(.bp5-icon-play),
 button.bp5-button[style*="border-radius: 50px"]:has(.bp5-icon-play) {
   display: none !important;
+}
+
+/* Hide the minimal navbar "Pages" button with play icon (broader selector) */
+.bp5-navbar .bp5-button.bp5-minimal:has(.bp5-icon-play) {
+  display: none !important;
+}
+
+/* Fallback: target SVG data-icon attribute */
+.bp5-navbar .bp5-button.bp5-minimal:has(svg[data-icon='play']) {
+  display: none !important;
+}
+
+/* Hide the entire small navbar that contains the play icon + "Pages" */
+.bp5-navbar:has(.bp5-icon-play) {
+  display: none !important;
+}
+
+/* Explicitly hide Polotno play control container and its children */
+.polotno-play-button-container,
+.polotno-play-button-container * {
+  display: none !important;
+}
+
+/* Remove any left spacing reserved for the play control */
+.polotno-pages-timeline,
+.polotno-pages-timeline .bp5-navbar,
+.polotno-pages-timeline .bp5-navbar-group,
+.polotno-pages-timeline [data-pages-container] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+
+/* Ensure page thumbnails align to the far left */
+.polotno-pages-timeline .polotno-pages-container,
+.polotno-pages-timeline [data-pages-container] {
+  justify-content: flex-start !important;
+}
+
+/* Kill the mysterious left spacer inside the pages container */
+.polotno-pages-timeline [data-pages-container] > div:first-child {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* More robust: hide any child that doesn't host the real pages container */
+.polotno-pages-timeline [data-pages-container] > div:not(:has(.polotno-pages-container)) {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Collapse any leftover left navbar group (reserve width) */
+.polotno-pages-timeline .bp5-navbar-group {
+  margin: 0 !important;
+  padding: 0 !important;
+  border: 0 !important;
+}
+.polotno-pages-timeline .bp5-navbar-group:not(:has([data-pages-container])) {
+  display: none !important;
+  width: 0 !important;
+}
+
+/* Remove layout gap before the first page item */
+.polotno-pages-timeline .polotno-pages-container,
+.polotno-pages-timeline [data-pages-container] {
+  gap: 0 !important;
+}
+.polotno-pages-timeline [data-pages-container] > *:first-child,
+.polotno-pages-timeline .polotno-pages-container > *:first-child {
+  margin-left: 0 !important;
+}
+
+/* Extra safeguard: match inline-styled spacer specifically (seen with padding-left: 60px) */
+.polotno-pages-timeline [data-pages-container] > div[style*="padding-left: 60px"] {
+  display: none !important;
+  width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
 }
 
 /* Alternative selector in case the above doesn't work */
@@ -24,6 +115,7 @@ button.bp5-button[style*="border-radius: 50px"]:has(.bp5-icon-play) {
   display: block !important;
   height: auto !important;
   min-height: 120px !important;
+  padding-left: 0 !important; /* remove default 5px left padding */
 }
 
 /* Keep the pages container always visible */
@@ -35,6 +127,8 @@ button.bp5-button[style*="border-radius: 50px"]:has(.bp5-icon-play) {
   visibility: visible !important;
   opacity: 1 !important;
   overflow-x: auto !important;
+  margin-left: 0 !important;
+  padding-left: 0 !important;
 }
 
 /* Make sure page thumbnails are visible */
@@ -44,4 +138,67 @@ button.bp5-button[style*="border-radius: 50px"]:has(.bp5-icon-play) {
   display: block !important;
   visibility: visible !important;
   opacity: 1 !important;
+}
+
+/* Hide the first navbar group (hosts play/spacing) */
+.bp5-navbar.polotno-pages-timeline > .bp5-navbar-group:first-child {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Unconditionally collapse any left-aligned navbar group inside Pages Timeline */
+.polotno-pages-timeline .bp5-navbar-group.bp5-align-left {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Defensive: collapse any group that looks like the spacer */
+.polotno-pages-timeline .bp5-navbar-group[style*="padding-left: 60px"],
+.polotno-pages-timeline .bp5-navbar-group[style*="width: 90px"],
+.polotno-pages-timeline .bp5-navbar-group[style*="padding-left:60px"],
+.polotno-pages-timeline .bp5-navbar-group[style*="width:90px"] {
+  display: none !important;
+  width: 0 !important;
+  min-width: 0 !important;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
+/* Ensure the group with pages container expands fully */
+.polotno-pages-timeline .bp5-navbar-group:has([data-pages-container]) {
+  flex: 1 1 auto !important;
+}
+
+/* Ensure the very first thumbnail has no left margin */
+.polotno-pages-timeline .polotno-pages-container > *:first-child,
+.polotno-pages-timeline [data-pages-container] > *:first-child {
+  margin-left: 0 !important;
+}
+
+/* Remove leftover left gutter before first page thumbnail */
+.polotno-pages-timeline .polotno-pages-container,
+.polotno-pages-timeline [data-pages-container] {
+  margin-left: 0 !important;
+  padding-left: 0 !important;
+}
+.polotno-pages-timeline .polotno-pages-container > *:first-child,
+.polotno-pages-timeline [data-pages-container] > *:first-child {
+  margin-left: 0 !important;
+}
+
+/* Hide any divider that could reserve space */
+.polotno-pages-timeline .bp5-navbar-divider {
+  display: none !important;
+}
+
+/* If a left navbar group exists (used to host play), remove it entirely */
+.polotno-pages-timeline .bp5-navbar-group.bp5-align-left:has(.bp5-icon-play),
+.polotno-pages-timeline .bp5-navbar-group.bp5-align-left:empty {
+  display: none !important;
 }

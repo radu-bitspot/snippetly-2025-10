@@ -2,7 +2,18 @@ import { nanoid } from 'nanoid';
 import { storage } from './storage';
 
 // Django API configuration
-const getApiBaseUrl = () => '/api';
+const getApiBaseUrl = () => {
+  // Always use full server URL to avoid proxy issues with images/previews
+  return 'http://79.137.67.72:8000/api';
+};
+
+// For reference: Old proxy-based approach (kept as comment)
+// const getApiBaseUrl = () => {
+//   if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+//     return '/api'; // Use Vite proxy in development
+//   }
+//   return 'http://79.137.67.72:8000/api';
+// };
 
 const getAuthHeaders = () => {
   const token = localStorage.getItem('authToken');
@@ -46,27 +57,50 @@ export async function listDesigns() {
       const mappedData = data.results ? data.results.map(design => ({
         id: design.id,
         name: design.name,
-        // Folosim endpoint-ul de preview direct din Django
-        previewURL: design.id ? `/api/designs/${design.id}/preview/?v=${new Date(design.updated_at).getTime()}` : null,
+        userId: design.user || design.user_id || design.owner || design.created_by,
+        tags: design.tags || [],
+        // Folosim endpoint-ul de preview direct din Django cu URL complet
+        previewURL: design.id ? `${getApiBaseUrl()}/designs/${design.id}/preview/?v=${design.updated_at ? new Date(design.updated_at).getTime() : Date.now()}` : null,
         createdAt: design.created_at,
         updatedAt: design.updated_at,
       })) : data.map(design => ({
         id: design.id,
         name: design.name,
-        // Folosim endpoint-ul de preview direct din Django
-        previewURL: design.id ? `/api/designs/${design.id}/preview/?v=${new Date(design.updated_at).getTime()}` : null,
+        userId: design.user || design.user_id || design.owner || design.created_by,
+        tags: design.tags || [],
+        // Folosim endpoint-ul de preview direct din Django cu URL complet
+        previewURL: design.id ? `${getApiBaseUrl()}/designs/${design.id}/preview/?v=${design.updated_at ? new Date(design.updated_at).getTime() : Date.now()}` : null,
         createdAt: design.created_at,
         updatedAt: design.updated_at,
       }));
       
       console.log('📋 Mapped designs:', mappedData);
-      // Log preview URLs pentru debugging
-      mappedData.forEach(design => {
-        if (design.previewURL) {
-          console.log(`🖼️ Design ${design.id} preview URL: ${design.previewURL}`);
+      
+      // ⚠️ FILTRU TEMPORAR PE FRONTEND - TREBUIE FIXAT PE BACKEND!
+      const currentUserId = localStorage.getItem('userId');
+      const totalDesigns = mappedData.length;
+      
+      const filteredDesigns = mappedData.filter(design => {
+        // Dacă design-ul nu are userId, îl arătăm (backward compatibility)
+        if (!design.userId) {
+          console.warn('⚠️ Design fără userId detectat:', design.id, '- Backend-ul NU trimite user info!');
+          return true;
         }
+        // Convertește ambele la string pentru comparație sigură
+        return String(design.userId) === String(currentUserId);
       });
-      return mappedData;
+      
+      if (filteredDesigns.length !== totalDesigns) {
+        console.warn(
+          `🔒 SECURITY WARNING: Backend returnează design-uri de la alți useri!\n` +
+          `   Total primit: ${totalDesigns}\n` +
+          `   Filtrat pe frontend: ${filteredDesigns.length}\n` +
+          `   ⚠️ TREBUIE FIXAT PE BACKEND: get_queryset() trebuie să filtreze pe user!`
+        );
+      }
+      
+      console.log('📋 Designs după filtrare pe user:', filteredDesigns);
+      return filteredDesigns;
     } else if (response.status === 401) {
       // Authentication error - return empty but show clear message
       const errorText = await response.text();
@@ -130,7 +164,7 @@ export async function loadById({ id }) {
   }
 }
 
-export async function saveDesign({ storeJSON, preview, name, id }) {
+export async function saveDesign({ storeJSON, preview, name, id, tags }) {
   console.log('💾 Saving design to database...');
   
   try {
@@ -144,6 +178,7 @@ export async function saveDesign({ storeJSON, preview, name, id }) {
       name: name || 'Untitled Design',
       store_json: typeof storeJSON === 'string' ? storeJSON : JSON.stringify(storeJSON),
       preview_data: previewData,
+      tags: tags || [], // Array of tags: ['instagram', 'story-teaser', etc.]
     };
     
     let response;

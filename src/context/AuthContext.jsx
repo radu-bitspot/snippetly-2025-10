@@ -59,6 +59,11 @@ export const AuthProvider = ({ children }) => {
       if (token) {
         try {
           const user = await getCurrentUser(token);
+          
+          // Store user ID for isolating local storage data per user
+          localStorage.setItem('userId', user.id || user.pk || 'anonymous');
+          console.log('✅ User ID restored to localStorage:', user.id || user.pk);
+          
           dispatch({
             type: 'AUTH_SUCCESS',
             payload: { user, token }
@@ -66,6 +71,7 @@ export const AuthProvider = ({ children }) => {
         } catch (error) {
           // Token is invalid, remove it
           localStorage.removeItem(API_CONFIG.TOKEN_KEY);
+          localStorage.removeItem('userId');
           dispatch({ type: 'AUTH_FAILURE' });
         }
       } else {
@@ -151,6 +157,10 @@ export const AuthProvider = ({ children }) => {
 
       // Get full user details
       const user = await getCurrentUser(response.token);
+      
+      // Store user ID for isolating local storage data per user
+      localStorage.setItem('userId', user.id || user.pk || 'anonymous');
+      console.log('✅ User ID saved to localStorage:', user.id || user.pk);
 
       dispatch({
         type: 'AUTH_SUCCESS',
@@ -210,6 +220,8 @@ export const AuthProvider = ({ children }) => {
       console.error('Logout API call failed:', error);
     } finally {
       localStorage.removeItem(API_CONFIG.TOKEN_KEY);
+      localStorage.removeItem('userId'); // Clear user ID to isolate data
+      console.log('✅ User ID cleared from localStorage on logout');
       dispatch({ type: 'LOGOUT' });
     }
   };
