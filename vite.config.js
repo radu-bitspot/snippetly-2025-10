@@ -25,7 +25,7 @@ export default defineConfig({
     ],
     proxy: {
       '/api': {
-        target: 'http://79.137.67.72:8000',
+        target: 'https://snippetly.ro',
         changeOrigin: true,
         secure: false
       },
