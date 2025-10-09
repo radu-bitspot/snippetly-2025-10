@@ -93,7 +93,7 @@ export default observer(({ store, onBackToHome }) => {
               style={{
                 fontSize: '20px',
                 fontWeight: 'bold',
-                color: '#000000',
+                color: '#ffffff',
                 marginRight: '15px',
                 letterSpacing: '-0.5px',
               }}

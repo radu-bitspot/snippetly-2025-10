@@ -310,6 +310,19 @@ const PolotnoStudio = observer(({ store }) => {
     // Hide landing page and show editor FIRST
     setShowLanding(false);
 
+    // Prevent auto-save from creating a brand-new draft immediately
+    // Take a snapshot of current store so first autosave is skipped until user edits
+    try {
+      project.lastSavedJSON = JSON.stringify(store.toJSON());
+      if (project.saveTimeout) {
+        clearTimeout(project.saveTimeout);
+        project.saveTimeout = null;
+      }
+      project.status = 'saved';
+    } catch (e) {
+      console.warn('Could not sync lastSavedJSON after template start:', e);
+    }
+
     // If we have AI content, prepare it for Summarize tab
     if (template.content && template.content.length > 0) {
       console.log('🤖 AI content detected, preparing Summarize tab...');
