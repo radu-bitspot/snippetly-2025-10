@@ -4,7 +4,7 @@ import { storage } from './storage';
 // Django API configuration
 const getApiBaseUrl = () => {
   // Always use full server URL to avoid proxy issues with images/previews
-  return 'http://79.137.67.72:8000/api';
+  return 'https://snippetly.ro/api';
 };
 
 // For reference: Old proxy-based approach (kept as comment)
