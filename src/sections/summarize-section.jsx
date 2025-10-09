@@ -358,27 +358,63 @@ export const SummarizePanel = observer(({ store }) => {
   // Inițializarea componentei la primul render
   useEffect(() => {
     store.loadFont('Inter'); // Încarcă fontul Inter pentru canvas
-    
+
     // Funcție pentru încărcarea datelor și restaurarea stării
     const loadData = async () => {
       updateState({ loadingTeasers: true });
       const teasers = await fetchTeasers();  // Încarcă story teasers din DB
       updateState({ storyTeasers: teasers, loadingTeasers: false });
-      
-      // Restaurează starea salvată anterior (dacă există)
-      const saved = restore();
-      if (saved) {
-        updateState({
-          selectedStoryTeaser: saved.selectedStoryTeaser || '',
-          responseData: saved.responseData || null,
-          title: saved.title || '',
-          outputType: saved.outputType || 'story-teaser'
-        });
+
+      // Check for AI handoff from Landing Page
+      const aiHandoff = localStorage.getItem('summarize_ai_handoff');
+      if (aiHandoff) {
+        try {
+          const aiData = JSON.parse(aiHandoff);
+          console.log('🤖 Summarize tab: AI handoff detected:', aiData);
+
+          // Set the response data with AI content
+          const responseData = {
+            slides: aiData.slides,
+            title: aiData.title
+          };
+
+          updateState({
+            responseData,
+            title: aiData.title || '',
+            outputType: aiData.outputType || 'story-teaser',
+            selectedTone: 'ACCESIBIL-EDUCAȚIONAL'
+          });
+
+          // Clear the handoff data
+          localStorage.removeItem('summarize_ai_handoff');
+
+          // Auto-apply to all pages if flag is set
+          if (aiData.autoApply && aiData.slides && aiData.slides.length > 0) {
+            console.log('🤖 Auto-applying AI content to all pages...');
+            setTimeout(() => {
+              replaceAllPagesWithSlides(aiData.slides, 'ACCESIBIL-EDUCAȚIONAL');
+            }, 500);
+          }
+
+        } catch (e) {
+          console.error('🤖 Failed to process AI handoff:', e);
+        }
+      } else {
+        // Restaurează starea salvată anterior (dacă există și nu e AI handoff)
+        const saved = restore();
+        if (saved) {
+          updateState({
+            selectedStoryTeaser: saved.selectedStoryTeaser || '',
+            responseData: saved.responseData || null,
+            title: saved.title || '',
+            outputType: saved.outputType || 'story-teaser'
+          });
+        }
       }
     };
-    
+
     loadData();
-  }, [store, fetchTeasers, restore, updateState]);
+  }, [store, fetchTeasers, restore, updateState, replaceAllPagesWithSlides]);
 
   // ============================================
   // FUNCȚII DE GESTIONARE A EVENIMENTELOR

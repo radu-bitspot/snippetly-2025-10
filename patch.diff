@@ -1,0 +1,26 @@
+*** Begin Patch
+*** Update File: src/App.jsx
+@@
+   const handleStartFromTemplate = async (template) => {
+     setSelectedTemplate(template);
+@@
+-    // Hide landing page and show editor FIRST
++    // Hide landing page and show editor FIRST
+     setShowLanding(false);
+ 
++    // Prevent auto-save from creating a brand-new draft immediately
++    // Take a snapshot of current store so first autosave is skipped until user edits
++    try {
++      project.lastSavedJSON = JSON.stringify(store.toJSON());
++      if (project.saveTimeout) {
++        clearTimeout(project.saveTimeout);
++        project.saveTimeout = null;
++      }
++      project.status = 'saved';
++    } catch (e) {
++      console.warn('Could not sync lastSavedJSON after template start:', e);
++    }
++
+     // If we have AI content, prepare it for Summarize tab
+     if (template.content && template.content.length > 0) {
+*** End Patch
