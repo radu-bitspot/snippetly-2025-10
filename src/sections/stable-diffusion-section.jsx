@@ -291,7 +291,7 @@ const GenerateTab = observer(({ store }) => {
               // Dacă nu e data URL și nu începe cu http, construiește URL-ul cu baza de date
               if (!finalImageUrl.startsWith('data:') && !finalImageUrl.startsWith('http')) {
                 // Presupunem că e un path relativ către baza de date
-                finalImageUrl = `http://79.137.67.72:8000${finalImageUrl.startsWith('/') ? '' : '/'}${finalImageUrl}`;
+                finalImageUrl = `https://snippetly.ro${finalImageUrl.startsWith('/') ? '' : '/'}${finalImageUrl}`;
                 console.log('🔍 Constructed full URL:', finalImageUrl);
               }
               
@@ -305,7 +305,7 @@ const GenerateTab = observer(({ store }) => {
               
               // Același tratament pentru URL-uri incomplete
               if (!imageUrl.startsWith('data:') && !imageUrl.startsWith('http')) {
-                imageUrl = `http://79.137.67.72:8000${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
+                imageUrl = `https://snippetly.ro${imageUrl.startsWith('/') ? '' : '/'}${imageUrl}`;
                 console.log('🔍 Constructed fallback URL:', imageUrl);
               }
               
@@ -324,7 +324,7 @@ const GenerateTab = observer(({ store }) => {
             
             // Construiește URL-ul complet dacă e necesar
             if (!generatedImageUrl.startsWith('data:') && !generatedImageUrl.startsWith('http')) {
-              generatedImageUrl = `http://79.137.67.72:8000${generatedImageUrl.startsWith('/') ? '' : '/'}${generatedImageUrl}`;
+              generatedImageUrl = `https://snippetly.ro${generatedImageUrl.startsWith('/') ? '' : '/'}${generatedImageUrl}`;
               console.log('🔍 Constructed legacy URL:', generatedImageUrl);
             }
             
