@@ -6,7 +6,7 @@ export const API_CONFIG = {
   BASE_URL: import.meta.env.VITE_API_URL || (
     window.location.hostname === 'localhost' 
       ? '/api'  // Use Vite proxy for localhost
-      : 'http://79.137.67.72:8000/api'  // Direct connection for server
+      : 'https://snippetly.ro/api'  // Direct connection for server
   ),
   
   // Authentication endpoints
