@@ -25,7 +25,7 @@ const TONE_TYPES = [
 ];
 
 // URL-ul webhook-ului pentru generarea de conținut AI
-const WEBHOOK_URL = 'http://79.137.67.72:5678/webhook/4ae9444d-23e0-4743-a197-1bc1e423df8f';
+const WEBHOOK_URL = 'https://snippetly.ro/webhook/4ae9444d-23e0-4743-a197-1bc1e423df8f';
 // Numărul minim de caractere necesar pentru procesare
 const MIN_CHARS = 20;
 

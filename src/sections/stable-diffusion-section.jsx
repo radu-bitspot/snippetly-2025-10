@@ -15,7 +15,7 @@ import { DESIGN_TEMPLATES, getDesignPrompt, getDesignOptions, DEFAULT_DESIGN_TYP
 import AddDesignModal from '../components/AddDesignModal';
 
 // Webhook URL constant - folosesc IP-ul public direct pentru webhook
-const WEBHOOK_URL = 'http://79.137.67.72:5678/webhook/2cded8da-f039-4e57-b6b1-c9d0fce8b059';
+const WEBHOOK_URL = 'https://snippetly.ro/webhook/2cded8da-f039-4e57-b6b1-c9d0fce8b059';
 
 // API configuration - using proxy for CORS
 const getApiBaseUrl = () => '/api';

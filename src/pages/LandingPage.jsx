@@ -133,7 +133,7 @@ const SecondaryButton = styled('button')`
   }
 `;
 
-const WEBHOOK_URL = 'http://79.137.67.72:5678/webhook/4ae9444d-23e0-4743-a197-1bc1e423df8f';
+const WEBHOOK_URL = 'https://snippetly.ro/webhook/4ae9444d-23e0-4743-a197-1bc1e423df8f';
 
 const PAGE_FORMATS = [
   { id: 'facebook', name: 'Facebook Post', width: 1200, height: 630 },

@@ -30,7 +30,7 @@ export default defineConfig({
         secure: false
       },
       '/webhook-test': {
-        target: 'http://79.137.67.72:5678',
+        target: 'https://snippetly.ro',
         changeOrigin: true,
         secure: false,
         configure: (proxy, options) => {
