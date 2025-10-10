@@ -27,7 +27,7 @@ unstable_setAnimationsEnabled(true);
 
 // Create original Polotno store
 const originalStore = createStore({ 
-  key: 'nFA5H9elEytDyPyvKL7T',
+  key: 'On2o78TGHKJR6DOJRzon',
   showCredit: false 
 });
 
