@@ -521,18 +521,6 @@ export const SummarizePanel = observer(({ store }) => {
         <div style={{ marginBottom: '15px' }}>
           <div style={{ fontSize: '12px', marginBottom: '8px', opacity: 0.7, display: 'flex', justifyContent: 'space-between' }}>
             <span>Load from Database:</span>
-            <Button
-              small minimal
-              onClick={async () => {
-                updateState({ loadingTeasers: true });
-                const teasers = await fetchTeasers();
-                updateState({ storyTeasers: teasers, loadingTeasers: false });
-              }}
-              loading={state.loadingTeasers}
-              style={{ fontSize: '10px', padding: '2px 6px', minHeight: '20px' }}
-            >
-              🔄 Refresh
-            </Button>
           </div>
           <select
             value={state.selectedStoryTeaser}
