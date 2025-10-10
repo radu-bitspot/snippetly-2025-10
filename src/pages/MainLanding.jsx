@@ -71,6 +71,62 @@ const Secondary = styled('button')`
   cursor: pointer;
 `;
 
+const PolotnoCard = styled('div')`
+  background: linear-gradient(135deg, #f8f7ff 0%, #f0ebff 100%);
+  border: 2px solid #e9d5ff;
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0;
+  box-shadow: 0 4px 16px rgba(139, 92, 246, 0.1);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(139, 92, 246, 0.15);
+  }
+`;
+
+const PolotnoTitle = styled('h3')`
+  margin: 0 0 8px 0;
+  font-size: 16px;
+  color: #6b21a8;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+`;
+
+const PolotnoText = styled('p')`
+  color: #4c1d95;
+  font-size: 13px;
+  line-height: 1.5;
+  margin: 0 0 10px 0;
+`;
+
+const PolotnoButton = styled('a')`
+  display: inline-block;
+  background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);
+  color: white;
+  padding: 8px 18px;
+  border-radius: 8px;
+  font-weight: 700;
+  font-size: 13px;
+  text-decoration: none;
+  cursor: pointer;
+  box-shadow: 0 4px 14px rgba(99, 102, 241, 0.25);
+  transition: all 0.3s ease;
+
+  &:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(99, 102, 241, 0.35);
+    background: linear-gradient(135deg, #7c3aed 0%, #a78bfa 100%);
+  }
+
+  &:active {
+    transform: translateY(-1px);
+  }
+`;
+
 const FeatureGrid = styled('div')`
   display: grid;
   grid-template-columns: repeat(2, 1fr);
@@ -126,6 +182,22 @@ const MainLanding = ({ onStart, onRequestLogin }) => {
             Snippetly transforms long-form text into beautiful shareable slides and social visuals using smart templates and AI-powered summarization.
             Save time, keep your voice, and publish faster.
           </Lead>
+
+          <PolotnoCard>
+            <PolotnoTitle>
+              🎨 Powered by Polotno
+            </PolotnoTitle>
+            <PolotnoText>
+              Polotno makes it easy to create and customize images and videos – from hands-on design to fully automated workflows.
+            </PolotnoText>
+            <PolotnoText>
+              Start creating banners, ads, reels – any visuals you need – with Polotno Studio. Want it inside your product?
+              Use Polotno SDK to embed a white-label editor into your website or web platform.
+            </PolotnoText>
+            <PolotnoButton href="https://polotno.com/" target="_blank" rel="noopener noreferrer">
+              Explore Polotno →
+            </PolotnoButton>
+          </PolotnoCard>
 
           {/* Primary CTA removed: single Login header button is the visible action */}
 
