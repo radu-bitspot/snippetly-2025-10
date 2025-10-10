@@ -119,7 +119,7 @@ const LoadingOverlay = styled('div')`
   border-radius: 12px;
 `;
 
-const LoginPage = () => {
+const LoginPage = ({ onBack }) => {
   const [formData, setFormData] = useState({
     email: '',
     password: ''
@@ -160,6 +160,24 @@ const LoginPage = () => {
   return (
     <LoginContainer>
       <LoginCard>
+          {onBack && (
+            <div style={{ position: 'absolute', top: 12, left: 12 }}>
+              <Button
+                onClick={onBack}
+                icon="arrow-left"
+                style={{
+                  background: '#ffffff',
+                  border: '2px solid #000000',
+                  color: '#000000',
+                  padding: '6px 10px',
+                  borderRadius: 6,
+                  fontWeight: 700
+                }}
+              >
+                Back
+              </Button>
+            </div>
+          )}
         {isLoading && (
           <LoadingOverlay>
             <Spinner size={40} />
