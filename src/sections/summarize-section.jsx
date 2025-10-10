@@ -242,7 +242,7 @@ const useCanvas = (store) => {
         x: store.width / 2 - width / 2,    // Centrat pe orizontală
         y: store.height / 2 - 50,          // Centrat pe verticală
         fontFamily: 'Inter',
-        fontSize: 16,
+        fontSize: 35,
         lineHeight: 1.4,
         align: 'left',
         fill: '#000000'
