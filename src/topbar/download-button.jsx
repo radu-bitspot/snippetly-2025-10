@@ -18,7 +18,7 @@ import { t } from 'polotno/utils/l10n';
 const saveAsVideo = async ({ store, pixelRatio, fps, onProgress }) => {
   const json = store.toJSON();
   const req = await fetch(
-    'https://api.polotno.dev/api/renders?KEY=nFA5H9elEytDyPyvKL7T',
+    'https://api.polotno.dev/api/renders?KEY=On2o78TGHKJR6DOJRzon',
     {
       method: 'POST',
       headers: {
@@ -34,7 +34,7 @@ const saveAsVideo = async ({ store, pixelRatio, fps, onProgress }) => {
   const job = await req.json();
   while (true) {
     const jobReq = await fetch(
-      `https://api.polotno.dev/api/renders/${job.id}?KEY=nFA5H9elEytDyPyvKL7T`
+      `https://api.polotno.dev/api/renders/${job.id}?KEY=On2o78TGHKJR6DOJRzon`
     );
     const jobData = await jobReq.json();
     if (jobData.status === 'done') {
