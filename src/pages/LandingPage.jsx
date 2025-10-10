@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import styled from 'polotno/utils/styled';
 import * as api from '../api';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 const LandingContainer = styled('div')`
   min-height: 100vh;
@@ -201,7 +202,7 @@ const LandingPage = ({ onStart, onRequestLogin }) => {
     try {
       const userId = localStorage.getItem('userId') || 'anonymous';
       
-      const response = await fetch(WEBHOOK_URL, {
+      const response = await fetchWithTimeout(WEBHOOK_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({

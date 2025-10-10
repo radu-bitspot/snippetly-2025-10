@@ -13,6 +13,7 @@ import { dataURLtoBlob } from '../blob';
 import { useAuth } from '../context/AuthContext';
 import { DESIGN_TEMPLATES, getDesignPrompt, getDesignOptions, DEFAULT_DESIGN_TYPE, addCustomTemplate, deleteCustomTemplate } from '../config/designTemplates';
 import AddDesignModal from '../components/AddDesignModal';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 // Webhook URL constant - folosesc IP-ul public direct pentru webhook
 const WEBHOOK_URL = 'https://snippetly.ro/webhook/2cded8da-f039-4e57-b6b1-c9d0fce8b059';
@@ -84,7 +85,7 @@ const GenerateTab = observer(({ store }) => {
       formData.append('source', 'ai-img-section');
       formData.append('timestamp', new Date().toISOString());
       
-      const response = await fetch(WEBHOOK_URL, {
+      const response = await fetchWithTimeout(WEBHOOK_URL, {
         method: 'POST',
         body: formData,
       });
@@ -251,8 +252,8 @@ const GenerateTab = observer(({ store }) => {
       // Debug: Log the payload being sent
       console.log('Sending webhook payload:', webhookData);
 
-      // Send to webhook
-      const response = await fetch(WEBHOOK_URL, {
+      // Send to webhook (with 10-minute timeout)
+      const response = await fetchWithTimeout(WEBHOOK_URL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

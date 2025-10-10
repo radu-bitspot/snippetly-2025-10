@@ -3,6 +3,7 @@ import { observer } from 'mobx-react-lite';
 import { TextArea, Card, Button, InputGroup } from '@blueprintjs/core';
 
 import { SectionTab } from 'polotno/side-panel';
+import { fetchWithTimeout } from '../utils/fetchWithTimeout';
 
 // ============================================
 // CONSTANTE - Configurări de bază ale aplicației
@@ -169,8 +170,8 @@ const useAPI = () => {
       } catch (e) { console.warn('User fetch failed:', e); }
     }
 
-    // Trimite cererea către webhook-ul AI
-    const response = await fetch(WEBHOOK_URL, {
+    // Trimite cererea către webhook-ul AI (cu timeout de 10 minute)
+    const response = await fetchWithTimeout(WEBHOOK_URL, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
