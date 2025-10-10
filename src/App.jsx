@@ -37,6 +37,7 @@ import { AuthProvider, useAuth } from './context/AuthContext';
 import LoginPage from './pages/LoginPage';
 import LoadingScreen from './components/LoadingScreen';
 import LandingPage from './pages/LandingPage';
+import MainLanding from './pages/MainLanding';
 
 // load default translations
 setTranslations(en);
@@ -369,7 +370,11 @@ const PolotnoStudio = observer(({ store }) => {
   };
 
   // Show landing page first
-  if (showLanding) {
+  // Allow forcing the landing page via URL query (useful during development)
+  const urlParams = new URLSearchParams(window.location.search);
+  const forceLanding = urlParams.get('landing') === 'true';
+
+  if (showLanding || forceLanding) {
     return (
       <LandingPage 
         onStart={handleStartFromTemplate}
@@ -448,15 +453,37 @@ const PolotnoStudio = observer(({ store }) => {
 // Auth-protected App Content
 const AppContent = ({ store }) => {
   const { isAuthenticated, isLoading } = useAuth();
+  const [showLogin, setShowLogin] = React.useState(false);
 
   // Show loading screen while checking authentication
   if (isLoading) {
     return <LoadingScreen />;
   }
 
-  // Show login page if not authenticated
+  // If user is not authenticated, show landing page first.
+  // The landing page can request to show the login screen via onRequestLogin.
   if (!isAuthenticated) {
-    return <LoginPage />;
+    if (showLogin) {
+      return <LoginPage onBack={() => setShowLogin(false)} />;
+    }
+
+    // Show the full marketing landing page for unauthenticated users
+    return (
+      <MainLanding
+        onStart={(template) => {
+          // If user presses Get started and we want them to login first, show login
+          // otherwise forward the request to show the editor via showLogin
+          if (!isAuthenticated) {
+            setShowLogin(true);
+            return;
+          }
+          // If authenticated (rare here), start
+          // eslint-disable-next-line no-unused-expressions
+          template && console.log('Start template from MainLanding', template);
+        }}
+        onRequestLogin={() => setShowLogin(true)}
+      />
+    );
   }
 
   // Show main app if authenticated

@@ -145,7 +145,7 @@ const PAGE_FORMATS = [
   { id: 'presentation', name: 'Presentation', width: 1920, height: 1080 },
 ];
 
-const LandingPage = ({ onStart }) => {
+const LandingPage = ({ onStart, onRequestLogin }) => {
   // Summarize state
   const [inputText, setInputText] = useState('');
   const [summaryTitle, setSummaryTitle] = useState('');
@@ -299,6 +299,12 @@ const LandingPage = ({ onStart }) => {
     console.log('📋 Selected Design:', selectedDesign);
     
     // Pass to parent to create the project
+    if (onRequestLogin) {
+      // Ask the app to show the login screen first
+      onRequestLogin();
+      return;
+    }
+
     await onStart(template);
   };
 
@@ -314,6 +320,10 @@ const LandingPage = ({ onStart }) => {
       format: null
     };
     console.log('🚀 Calling onStart with blank template:', blankTemplate);
+    if (onRequestLogin) {
+      onRequestLogin();
+      return;
+    }
     onStart(blankTemplate);
   };
 
@@ -328,6 +338,7 @@ const LandingPage = ({ onStart }) => {
   return (
     <LandingContainer>
       <ContentCard>
+        {/* generator UI remains focused - about content moved to MainLanding */}
         {/* Skip to Editor Button - Fixed position - KEEP COLORED */}
         <button
           onClick={handleSkipToEditor}
